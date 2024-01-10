@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import List
 from typing import Optional
-from .roles.roles import Role
 
 
 class Company(BaseModel):
@@ -31,4 +30,4 @@ class User(BaseModel):
     name: str
     email: str
     password: str
-    role: str = Role.USER
+    role: str = "USER"
