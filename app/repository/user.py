@@ -21,3 +21,7 @@ def get_user(id: int, db: Session):
                             detail=f"User with id {id} not found")
 
     return user
+
+
+def get_all_users(db: Session):
+    return db.query(models.User).all()
