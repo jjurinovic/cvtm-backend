@@ -15,9 +15,9 @@ def create_company(req: schemas.Company, db: Session = Depends(database.get_db))
     return company.create_company(req, db)
 
 
-@router.get('/{id}', response_model=schemas.ShowCompany)
-def get_company(id: int, db: Session = Depends(database.get_db)):
-    return company.get_company(id, db)
+@router.get('/{id}', response_model=schemas.ShowCompany, dependencies=[Depends(auth.RoleChecker([roles.Role.ADMIN]))])
+def get_company(id: int, db: Session = Depends(database.get_db), current_user: schemas.User = Depends(auth.get_current_user)):
+    return company.get_company(id, db, current_user)
 
 
 @router.get('/', response_model=List[schemas.ShowCompany], dependencies=[Depends(auth.RoleChecker([roles.Role.ROOT]))])
