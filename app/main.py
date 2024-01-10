@@ -1,7 +1,10 @@
 from fastapi import FastAPI
+from .routers import user
+from . import models
+from .database import engine
 
 app = FastAPI()
 
-@app.get('/test')
-def test():
-    return 'test'
+models.Base.metadata.create_all(engine)
+
+app.include_router(user.router)
