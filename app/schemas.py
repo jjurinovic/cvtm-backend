@@ -12,15 +12,7 @@ class ShowUser(BaseModel):
     id: int
     name: str
     email: str
-    company: List[Company]
-
-    class Config():
-        orm_mode = True
-
-
-class ShowCompany(Company):
-    id: int
-    creator: ShowUser
+    company_id: int
 
     class Config():
         orm_mode = True
@@ -31,3 +23,12 @@ class User(BaseModel):
     email: str
     password: str
     role: str = "USER"
+    company_id: int
+
+
+class ShowCompany(Company):
+    id: int
+    employees: List[ShowUser]
+
+    class Config():
+        orm_mode = True

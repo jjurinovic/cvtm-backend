@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 def create_user(req: schemas.User, db: Session):
     hashed_pwd = hashing.Hash.bcrypt(req.password)
     new_user = models.User(name=req.name, email=req.email,
-                           password=hashed_pwd, role=req.role)
+                           password=hashed_pwd, role=req.role, company_id=req.company_id)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
