@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from typing import Optional
+from datetime import date
 
 
 class Company(BaseModel):
@@ -46,3 +47,9 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+
+class Day(BaseModel):
+    date: date
+    user_id: int
+    company_id: int

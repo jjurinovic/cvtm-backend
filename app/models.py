@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from .database import Base
 from sqlalchemy.orm import relationship
 
@@ -20,3 +20,11 @@ class Company(Base):
     vat = Column(String)
 
     employees = relationship("User")
+
+
+class Day(Base):
+    __tablename__ = 'days'
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date)
+    company_id = Column(Integer, ForeignKey("companies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
