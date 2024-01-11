@@ -25,14 +25,19 @@ def create_user(req: schemas.ShowUser, db: Session, current_user: schemas.User):
 
 
 def get_user(id: int, db: Session, current_user: schemas.User):
+    not_found_exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"User with id {id} not found")
+
+    if current_user.role == roles.Role.USER and id != current_user.id:
+        raise not_found_exception
+
     user = db.query(models.User).filter(models.User.id == id).first()
 
     if current_user.role == roles.Role.ROOT:
         return user
 
     if user.company_id != current_user.company_id or not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"User with id {id} not found")
+        raise not_found_exception
 
     return user
 
