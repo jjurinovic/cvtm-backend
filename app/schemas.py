@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from typing import Optional
-from datetime import date
+from datetime import date, time
 
 
 class Company(BaseModel):
@@ -49,7 +49,22 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class TimeEntry(BaseModel):
+    int: str
+    start_time: time
+    end_time: time
+    pause: int
+    notes: str
+    day_id: int
+
+
 class Day(BaseModel):
-    date: date
+    date: str
     user_id: int
     company_id: int
+
+
+class ShowDay(Day):
+    id: int
+    date: date
+    entries: List[TimeEntry]
