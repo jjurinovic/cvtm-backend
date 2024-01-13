@@ -1,14 +1,17 @@
 from sqlalchemy.orm import Session
-from .. import models, schemas, roles
+from .. import models, roles
 from fastapi import HTTPException, status
 from datetime import datetime
+from ..schemas.days import Day, DayCreate, TimeEntry
+from ..schemas.users import User
+from typing import List
 
 
 def str_to_date(val: str):
     return datetime.strptime(val, '%Y-%m-%d').date()
 
 
-def create_day(req: schemas.Day, db: Session, current_user: schemas.User):
+def create_day(req: DayCreate, db: Session, current_user: User) -> Day:
     date = str_to_date(req.date)
     new_day = models.Day(
         date=date, company_id=req.company_id, user_id=req.user_id)
@@ -18,7 +21,7 @@ def create_day(req: schemas.Day, db: Session, current_user: schemas.User):
     return new_day
 
 
-def get_day(id: int, db: Session, current_user: schemas.User):
+def get_day(id: int, db: Session, current_user: User) -> Day:
     # find compy by id
     day = db.query(models.Day).filter(models.Day.id == id).first()
 
@@ -34,7 +37,7 @@ def get_day(id: int, db: Session, current_user: schemas.User):
     return day
 
 
-def create_entry(req: schemas.TimeEntry, db: Session, current_user: schemas.User):
+def create_entry(req: TimeEntry, db: Session, current_user: User) -> TimeEntry:
     new_entry = models.TimeEntry(
         start_time=req.start_time, end_time=req.end_time, pause=req.pause, notes=req.notes, day_id=req.day_id)
     db.add(new_entry)
@@ -43,7 +46,7 @@ def create_entry(req: schemas.TimeEntry, db: Session, current_user: schemas.User
     return new_entry
 
 
-def get_days(company_id: int, user_id: int, start, end, db):
+def get_days(company_id: int, user_id: int, start, end, db) -> List[Day]:
     # get all days for given company
     days = db.query(models.Day).filter(models.Day.company_id == company_id)
     # get all days for given user

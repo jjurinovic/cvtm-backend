@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
-from .. import models, schemas, hashing, roles
+from .. import models, hashing, roles
 from fastapi import HTTPException, status
+from ..schemas.users import User, UserCreate
+from typing import List
 
 
 def same_company_id_and_no_root(company_id, user_company_id, role) -> bool:
@@ -9,7 +11,7 @@ def same_company_id_and_no_root(company_id, user_company_id, role) -> bool:
                             detail=f"Company id must be same like your company id")
 
 
-def create_user(req: schemas.ShowUser, db: Session, current_user: schemas.User):
+def create_user(req: UserCreate, db: Session, current_user: User) -> User:
 
     # don't allow admin to create user to another company
     same_company_id_and_no_root(
@@ -24,7 +26,7 @@ def create_user(req: schemas.ShowUser, db: Session, current_user: schemas.User):
     return new_user
 
 
-def get_user(id: int, db: Session, current_user: schemas.User):
+def get_user(id: int, db: Session, current_user: User) -> User:
     not_found_exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                         detail=f"User with id {id} not found")
 
@@ -42,7 +44,7 @@ def get_user(id: int, db: Session, current_user: schemas.User):
     return user
 
 
-def get_all_users(company_id: int, db: Session, current_user):
+def get_all_users(company_id: int, db: Session, current_user) -> List[User]:
     # don't allow admin to create user to another company
     same_company_id_and_no_root(
         company_id, current_user.company_id, current_user.role)
