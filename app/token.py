@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import timedelta, datetime
 from jose import jwt, JWTError
 from fastapi import HTTPException
-from . import schemas
+from .schemas.auth import TokenData
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -31,7 +31,7 @@ def verify(token: str, credentials_exception: HTTPException):
 
         if email is None:
             raise credentials_exception
-        return schemas.TokenData(username=email)
+        return TokenData(username=email)
 
     except JWTError:
         raise credentials_exception
