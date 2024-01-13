@@ -4,7 +4,7 @@ from ..schemas.days import Day, DayCreate, TimeEntry
 from ..schemas.users import User
 from sqlalchemy.orm import Session
 from ..repository import day
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(
     tags=['Days'],
@@ -29,5 +29,5 @@ def create_entry(req: TimeEntry, db: Session = Depends(database.get_db), current
 
 
 @router.get('/', status_code=status.HTTP_200_OK, response_model=List[Day])
-def get_days(company_id: int, user_id: int, start: str, end: str, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
-    return day.get_days(company_id, user_id, start, end, db)
+def get_days(company_id: int, user_id: int, start: Optional[str] = None, end: Optional[str] = None, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+    return day.get_days(company_id, user_id, start, end, db, current_user)

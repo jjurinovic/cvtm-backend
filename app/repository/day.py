@@ -46,7 +46,14 @@ def create_entry(req: TimeEntry, db: Session, current_user: User) -> TimeEntry:
     return new_entry
 
 
-def get_days(company_id: int, user_id: int, start, end, db) -> List[Day]:
+def get_days(company_id: int, user_id: int, start: str, end: str, db: Session, current_user: User) -> List[Day]:
+    start_date = datetime.strptime(start, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end, '%Y-%m-%d').date()
+
+    if end_date and start_date and end_date < start_date:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Start date must be before end date")
+
     # get all days for given company
     days = db.query(models.Day).filter(models.Day.company_id == company_id)
     # get all days for given user
@@ -54,13 +61,11 @@ def get_days(company_id: int, user_id: int, start, end, db) -> List[Day]:
 
     # get all days after given start
     if start:
-        s = datetime.strptime(start, '%Y-%m-%d').date()
-        days = days.filter(models.Day.date >= s)
+        days = days.filter(models.Day.date >= start_date)
 
     # get all days before given end
     if end:
-        e = datetime.strptime(end, '%Y-%m-%d').date()
-        days = days.filter(models.Day.date <= e)
+        days = days.filter(models.Day.date <= end_date)
 
     if not days:
         raise HTTPException(
