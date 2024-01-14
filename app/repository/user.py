@@ -9,7 +9,7 @@ from ..services.user import is_email_taken, is_root, is_user, is_id_same
 
 def create_user(req: UserCreate, db: Session, current_user: User) -> User:
 
-    if is_email_taken(req.email):
+    if is_email_taken(req.email, db):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email is already taken")
 
