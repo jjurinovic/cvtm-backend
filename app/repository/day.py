@@ -5,10 +5,8 @@ from datetime import datetime
 from ..schemas.days import Day, DayCreate, TimeEntry
 from ..schemas.users import User
 from typing import List
-
-
-def str_to_date(val: str):
-    return datetime.strptime(val, '%Y-%m-%d').date()
+from ..services.company import is_user_in_company
+from ..services.date import str_to_date, is_start_before_end
 
 
 def create_day(req: DayCreate, db: Session, current_user: User) -> Day:
@@ -30,7 +28,7 @@ def get_day(id: int, db: Session, current_user: User) -> Day:
                             detail=f"Day with id {id} not found")
 
     # don't allow to return company if company not belongs to admin or user is not root
-    if day.company_id != current_user.company_id and current_user.role != roles.Role.ROOT:
+    if is_user_in_company(day.company_id, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Forbidden")
 
@@ -47,10 +45,10 @@ def create_entry(req: TimeEntry, db: Session, current_user: User) -> TimeEntry:
 
 
 def get_days(company_id: int, user_id: int, start: str, end: str, db: Session, current_user: User) -> List[Day]:
-    start_date = datetime.strptime(start, '%Y-%m-%d').date()
-    end_date = datetime.strptime(end, '%Y-%m-%d').date()
+    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start else None
+    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end else None
 
-    if end_date and start_date and end_date < start_date:
+    if is_start_before_end(start_date, end_date):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Start date must be before end date")
 
