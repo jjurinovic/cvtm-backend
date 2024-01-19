@@ -10,7 +10,6 @@ class CompanyCreate(BaseModel):
 
 class Company(CompanyCreate):
     id: int
-    employees: List[User]
 
     class Config():
         orm_mode = True
