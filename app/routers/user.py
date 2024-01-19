@@ -16,6 +16,12 @@ def create_user(req: UserCreate, db: Session = Depends(database.get_db), current
     return user.create_user(req, db, current_user)
 
 
+@router.get('/me', response_model=User)
+def get_current_user(current_user: User = Depends(auth.get_current_user)):
+    print(current_user)
+    return current_user
+
+
 @router.get('/{id}', response_model=User)
 def get_user(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
     return user.get_user(id, db, current_user)
