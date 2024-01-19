@@ -6,6 +6,7 @@ from ..token import create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from ..token import ACCESS_TOKEN_EXPIRE_MINUTES
+from ..schemas.auth import LoginResponse
 
 
 router = APIRouter(
@@ -13,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.post('/login')
+@router.post('/login', response_model=LoginResponse)
 def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(
         models.User.email == req.username).first()
@@ -31,4 +32,4 @@ def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(data
         data={"sub": user.email},
         expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "user": user}

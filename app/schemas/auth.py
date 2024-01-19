@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List
 from typing import Optional
+from ..schemas.users import User
 
 
 class Login(BaseModel):
@@ -8,9 +8,9 @@ class Login(BaseModel):
     password: str
 
 
-class Token(BaseModel):
+class LoginResponse(BaseModel):
     access_token: str
-    token_type: str
+    user: User
 
 
 class TokenData(BaseModel):
