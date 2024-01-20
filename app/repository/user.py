@@ -52,3 +52,13 @@ def get_all_users(company_id: int, db: Session, current_user) -> List[User]:
                             detail=f"Company id must be same like your company id")
 
     return db.query(models.User).filter(models.User.company_id == company_id)
+
+
+def create_root(req: UserCreate, db: Session) -> User:
+    hashed_pwd = hashing.Hash.bcrypt(req.password)
+    new_user = models.User(name=req.name, email=req.email,
+                           password=hashed_pwd, role=roles.Role.ROOT.value, company_id=None)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user

@@ -9,8 +9,8 @@ class User(Base):
     name = Column(String)
     email = Column(String)
     password = Column(String)
-    company_id = Column(Integer, ForeignKey("companies.id"))
-    role = Column(String)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
+    role = Column(Integer)
 
 
 class Company(Base):
