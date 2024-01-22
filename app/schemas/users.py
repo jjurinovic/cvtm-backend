@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from .address import Address
 
 
 class UserCreate(BaseModel):
@@ -8,6 +9,7 @@ class UserCreate(BaseModel):
     password: str
     company_id: Optional[int] = None
     role: int = 3
+    address: Optional[Address]
 
 
 class User(BaseModel):
@@ -16,6 +18,7 @@ class User(BaseModel):
     email: str
     role: int = 3
     company_id: Optional[int] = None
+    address: Optional[Address]
 
     class Config():
         orm_mode = True

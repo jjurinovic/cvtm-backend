@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List
 from .users import User
+from .address import Address
 
 
 class CompanyCreate(BaseModel):
@@ -10,6 +10,7 @@ class CompanyCreate(BaseModel):
 
 class Company(CompanyCreate):
     id: int
+    address: Address
 
     class Config():
         orm_mode = True
