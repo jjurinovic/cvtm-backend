@@ -19,8 +19,12 @@ def create_user(req: UserCreate, db: Session, current_user: User) -> User:
                             detail=f"Company id must be same like your company id")
 
     hashed_pwd = hashing.Hash.bcrypt(req.password)
+    address = models.Address(address1=req.address.address1, address2=req.address.address2, city=req.address.city,
+                             county=req.address.county, country=req.address.country, postcode=req.address.postcode)
+    db.add(address)
+    db.commit()
     new_user = models.User(name=req.name, email=req.email,
-                           password=hashed_pwd, role=req.role, company_id=req.company_id)
+                           password=hashed_pwd, role=req.role, company_id=req.company_id, address_id=address.id)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
