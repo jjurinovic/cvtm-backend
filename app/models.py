@@ -3,6 +3,17 @@ from .database import Base
 from sqlalchemy.orm import relationship
 
 
+class Address(Base):
+    __tablename__ = 'addresses'
+    id = Column(Integer, primary_key=True, index=True)
+    address1 = Column(String)
+    address2 = Column(String, nullable=True)
+    city = Column(String)
+    county = Column(String, nullable=True)
+    postcode = Column(String)
+    country = Column(String)
+
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
@@ -11,6 +22,8 @@ class User(Base):
     password = Column(String)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
     role = Column(Integer)
+    address_id = Column(Integer, ForeignKey("addresses.id"))
+    address = relationship("Address")
 
 
 class Company(Base):
@@ -18,6 +31,8 @@ class Company(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     vat = Column(String)
+    address_id = Column(Integer, ForeignKey("addresses.id"))
+    address = relationship("Address", backref="companies")
 
 
 class Day(Base):
