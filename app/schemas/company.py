@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from .users import User
-from .address import Address
+from .address import AddressSchema
+from typing import Optional
 
 
 class CompanyCreate(BaseModel):
@@ -10,7 +10,7 @@ class CompanyCreate(BaseModel):
 
 class Company(CompanyCreate):
     id: int
-    address: Address
+    address: Optional[AddressSchema] = None
 
     class Config():
-        orm_mode = True
+        from_attributes = True
