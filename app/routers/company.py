@@ -5,6 +5,8 @@ from ..repository import company
 from typing import List
 from ..schemas.company import Company, CompanyCreate
 from ..schemas.users import User
+from ..schemas.pagination import PagedResponse, PageParams
+from ..pagination import paginate
 
 router = APIRouter(
     tags=['Company'],
@@ -22,6 +24,7 @@ def get_company(id: int, db: Session = Depends(database.get_db), current_user: U
     return company.get_company(id, db, current_user)
 
 
-@router.get('/', response_model=List[Company], dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
-def get_all_companies(db: Session = Depends(database.get_db)):
-    return company.get_all_companies(db)
+@router.get('/', response_model=PagedResponse[Company], dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
+def get_all_companies(page_params: PageParams = Depends(PageParams), db: Session = Depends(database.get_db)):
+    query = company.get_all_companies(db)
+    return paginate(page_params, query, Company)

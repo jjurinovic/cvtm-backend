@@ -32,7 +32,7 @@ class Company(Base):
     name = Column(String)
     vat = Column(String)
     address_id = Column(Integer, ForeignKey("addresses.id"))
-    address = relationship("Address", backref="companies")
+    address = relationship("Address")
 
 
 class Day(Base):

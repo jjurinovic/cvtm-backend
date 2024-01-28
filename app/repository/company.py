@@ -30,4 +30,4 @@ def get_company(id: int, db: Session, current_user: User):
 
 
 def get_all_companies(db: Session):
-    return db.query(models.Company).all()
+    return db.query(models.Company)

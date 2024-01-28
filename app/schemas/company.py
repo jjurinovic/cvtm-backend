@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .address import AddressSchema
+from .address import Address
 from typing import Optional
 
 
@@ -10,7 +10,7 @@ class CompanyCreate(BaseModel):
 
 class Company(CompanyCreate):
     id: int
-    address: Optional[AddressSchema] = None
+    address: Optional[Address] = None
 
     class Config():
         from_attributes = True

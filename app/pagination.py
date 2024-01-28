@@ -1,6 +1,6 @@
 from .schemas.pagination import PageParams, PagedResponse, T
 from pydantic import BaseModel
-from .schemas.address import AddressSchema
+from .schemas.address import Address
 
 
 def paginate(page_params: PageParams, query, ResponseSchema: BaseModel) -> PagedResponse[T]:

@@ -3,9 +3,12 @@ from typing import Optional
 
 
 class Address(BaseModel):
-    address1: Optional[str]
-    address2: Optional[str]
-    city: Optional[str]
-    county: Optional[str]
-    country: Optional[str]
-    postcode: Optional[str]
+    address1: Optional[str] = None
+    address2: Optional[str] = None
+    city: Optional[str] = None
+    county: Optional[str] = None
+    country: Optional[str] = None
+    postcode: Optional[str] = None
+
+    class Config():
+        from_attributes = True
