@@ -6,6 +6,7 @@ from typing import Optional
 class CompanyCreate(BaseModel):
     name: str
     vat: str
+    address: Address
 
 
 class Company(CompanyCreate):

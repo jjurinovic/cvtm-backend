@@ -6,7 +6,11 @@ from ..schemas.users import User
 
 
 def create_company(req: CompanyCreate, db: Session) -> Company:
-    new_company = models.Company(name=req.name, vat=req.vat)
+    address = models.Address(address1=req.address.address1, address2=req.address.address2, city=req.address.city,
+                             county=req.address.county, country=req.address.country, postcode=req.address.postcode)
+    db.add(address)
+    db.commit()
+    new_company = models.Company(name=req.name, vat=req.vat, address=address)
     db.add(new_company)
     db.commit()
     db.refresh(new_company)
