@@ -6,7 +6,8 @@ from typing import List
 from ..schemas.company import Company, CompanyCreate
 from ..schemas.users import User
 from ..schemas.pagination import PagedResponse, PageParams
-from ..pagination import paginate
+from ..pagination import filter
+from ..models import Company as c
 
 router = APIRouter(
     tags=['Company'],
@@ -27,4 +28,4 @@ def get_company(id: int, db: Session = Depends(database.get_db), current_user: U
 @router.get('/', response_model=PagedResponse[Company], dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
 def get_all_companies(page_params: PageParams = Depends(PageParams), db: Session = Depends(database.get_db)):
     query = company.get_all_companies(db)
-    return paginate(page_params, query, Company)
+    return filter(page_params, query, Company, c)

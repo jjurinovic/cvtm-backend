@@ -1,18 +1,31 @@
 from .schemas.pagination import PageParams, PagedResponse, T
 from pydantic import BaseModel
 from .schemas.address import Address
+from sqlalchemy import desc, asc
+from .database import Base
 
 
-def paginate(page_params: PageParams, query, ResponseSchema: BaseModel) -> PagedResponse[T]:
-    """Paginate the query."""
+def filter(page_params: PageParams, query, ResponseSchema: BaseModel, ResponseModel: Base) -> PagedResponse[T]:
+    """Paginate and sort the query."""
+
+    def sort(val: str, field: str):
+        if (val == 'desc'):
+            return desc(getattr(ResponseModel, field))
+        else:
+            return asc(getattr(ResponseModel, field))
+
+    if (page_params.sort):
+        query = query.order_by(sort(page_params.sort, page_params.sort_field))
 
     paginated_query = query.offset(
-        (page_params.page - 1) * page_params.size).limit(page_params.size).all()
+        (page_params.page - 1) * page_params.size).limit(page_params.size)
 
     return PagedResponse(
         total=query.count(),
         page=page_params.page,
         size=page_params.size,
+        sort=page_params.sort,
+        sort_field=page_params.sort_field,
         results=[ResponseSchema.model_validate(
-            item) for item in paginated_query]
+            item) for item in paginated_query.all()]
     )
