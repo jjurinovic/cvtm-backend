@@ -10,6 +10,7 @@ class PageParams(BaseModel):
     size: Annotated[int, Field(ge=1, le=100)] = 10
     sort: Optional[str] = None
     sort_field: Optional[str] = None
+    q: Optional[str] = None
 
 
 T = TypeVar("T")
@@ -21,4 +22,5 @@ class PagedResponse(BaseModel, Generic[T]):
     size: int
     sort: Optional[str] = None
     sort_field: Optional[str] = None
+    q: Optional[str] = None
     results: List[T]

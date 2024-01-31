@@ -28,4 +28,4 @@ def get_company(id: int, db: Session = Depends(database.get_db), current_user: U
 @router.get('/', response_model=PagedResponse[Company], dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
 def get_all_companies(page_params: PageParams = Depends(PageParams), db: Session = Depends(database.get_db)):
     query = company.get_all_companies(db)
-    return filter(page_params, query, Company, c)
+    return filter(page_params, query, Company, c, ['name', 'vat'])

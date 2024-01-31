@@ -1,11 +1,13 @@
 from .schemas.pagination import PageParams, PagedResponse, T
 from pydantic import BaseModel
 from .schemas.address import Address
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, or_
+from sqlalchemy.orm import Query
 from .database import Base
+from typing import List, Optional
 
 
-def filter(page_params: PageParams, query, ResponseSchema: BaseModel, ResponseModel: Base) -> PagedResponse[T]:
+def filter(page_params: PageParams, query: Query, ResponseSchema: BaseModel, ResponseModel: Base, searchField: Optional[List[str]]) -> PagedResponse[T]:
     """Paginate and sort the query."""
 
     def sort(val: str, field: str):
@@ -13,6 +15,11 @@ def filter(page_params: PageParams, query, ResponseSchema: BaseModel, ResponseMo
             return desc(getattr(ResponseModel, field))
         else:
             return asc(getattr(ResponseModel, field))
+
+    if page_params.q and searchField:
+        arr = [getattr(ResponseModel, field).ilike(page_params.q + '%')
+               for field in searchField]
+        query = query.filter(or_(*arr))
 
     if (page_params.sort):
         query = query.order_by(sort(page_params.sort, page_params.sort_field))
@@ -26,6 +33,7 @@ def filter(page_params: PageParams, query, ResponseSchema: BaseModel, ResponseMo
         size=page_params.size,
         sort=page_params.sort,
         sort_field=page_params.sort_field,
+        q=page_params.q,
         results=[ResponseSchema.model_validate(
             item) for item in paginated_query.all()]
     )
