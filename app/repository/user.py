@@ -5,6 +5,7 @@ from ..schemas.users import User, UserCreate
 from typing import List
 from ..services.company import is_user_in_company
 from ..services.user import is_email_taken, is_root, is_user, is_id_same
+from .address import create_address
 
 
 def create_user(req: UserCreate, db: Session, current_user: User) -> User:
@@ -19,10 +20,8 @@ def create_user(req: UserCreate, db: Session, current_user: User) -> User:
                             detail=f"Company id must be same like your company id")
 
     hashed_pwd = hashing.Hash.bcrypt(req.password)
-    address = models.Address(address1=req.address.address1, address2=req.address.address2, city=req.address.city,
-                             county=req.address.county, country=req.address.country, postcode=req.address.postcode)
-    db.add(address)
-    db.commit()
+    address = create_address(req, db)
+
     new_user = models.User(name=req.name, email=req.email,
                            password=hashed_pwd, role=req.role, company_id=req.company_id, address_id=address.id)
     db.add(new_user)
