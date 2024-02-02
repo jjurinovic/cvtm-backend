@@ -16,6 +16,11 @@ def create_user(req: UserCreate, db: Session = Depends(database.get_db), current
     return user.create_user(req, db, current_user)
 
 
+@router.put('/', response_model=User)
+def update_user(req: User, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+    return user.update_user(req, db, current_user)
+
+
 @router.post('/root', response_model=User)
 def create_root_user(req: UserCreate, db: Session = Depends(database.get_db)):
     return user.create_root(req, db)

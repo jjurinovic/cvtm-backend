@@ -20,5 +20,9 @@ def is_root(current_user: User) -> bool:
     return current_user.role == roles.Role.ROOT
 
 
+def is_moderator(current_user: User) -> bool:
+    return current_user.role == roles.Role.MODERATOR
+
+
 def is_user(current_user: User) -> bool:
     return current_user.role == roles.Role.USER
