@@ -21,4 +21,4 @@ class User(BaseModel):
     address: Optional[Address]
 
     class Config():
-        orm_mode = True
+        from_attributes = True
