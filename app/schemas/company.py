@@ -11,7 +11,7 @@ class CompanyCreate(BaseModel):
 
 class Company(CompanyCreate):
     id: int
-    vat: str
+    vat: Optional[str]
     address: Optional[Address] = None
 
     class Config():
