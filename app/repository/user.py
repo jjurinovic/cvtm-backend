@@ -71,7 +71,8 @@ def get_user(id: int, db: Session, current_user: User) -> User:
     if is_root(current_user):
         return user
 
-    if is_user_in_company(user.company_id, current_user) or not user:
+    print(user.company_id, current_user.company_id)
+    if not is_user_in_company(user.company_id, current_user) or not user:
         raise not_found_exception
 
     return user
