@@ -10,9 +10,14 @@ from ..hashing import Hash
 from ..email.send_email import send_registration_email
 import secrets
 import string
+from ..roles import Role
 
 
 async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
+    if not is_root(current_user) and req.role == Role.ROOT:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Only ROOT user can create another root user")
+
     if is_email_taken(req.email, db):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email is already taken")
