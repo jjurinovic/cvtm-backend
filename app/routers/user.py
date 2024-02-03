@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends
 from .. import database, roles, auth
 from sqlalchemy.orm import Session
 from ..repository import user
-from typing import List
-from ..schemas.users import UserCreate, User
+from ..schemas.users import UserCreate, User, PasswordChange
 from ..schemas.pagination import PagedResponse, PageParams
 from ..pagination import filter
 from ..models import User as UserModel
@@ -43,3 +42,8 @@ def get_user(id: int, db: Session = Depends(database.get_db), current_user: User
 def get_all_users(company_id: int, page_params: PageParams = Depends(PageParams), db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
     query = user.get_all_users(company_id, db, current_user)
     return filter(page_params, query, User, UserModel, ['name'])
+
+
+@router.put('/change-password')
+def change_password(req: PasswordChange, db: Session = Depends(database.get_db), current_user: UserCreate = Depends(auth.get_current_user)):
+    return user.password_change(req, db, current_user)

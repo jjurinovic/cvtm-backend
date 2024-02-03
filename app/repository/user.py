@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
 from .. import models, hashing, roles
 from fastapi import HTTPException, status
-from ..schemas.users import User, UserCreate
+from ..schemas.users import User, UserCreate, PasswordChange
 from typing import List
 from ..services.company import is_user_in_company
 from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator
 from .address import create_address, update_address
+from ..hashing import Hash
 
 
 def create_user(req: UserCreate, db: Session, current_user: User) -> User:
@@ -93,3 +94,16 @@ def create_root(req: UserCreate, db: Session) -> User:
     db.commit()
     db.refresh(new_user)
     return new_user
+
+
+def password_change(req: PasswordChange, db: Session, current_user: UserCreate):
+    if not Hash.verify(current_user.password, req.old_password):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='Invalid password')
+
+    current_user.password = hashing.Hash.bcrypt(req.new_password)
+
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return {'detail': 'Password updated'}

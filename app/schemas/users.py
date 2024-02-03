@@ -22,3 +22,8 @@ class User(BaseModel):
 
     class Config():
         from_attributes = True
+
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
