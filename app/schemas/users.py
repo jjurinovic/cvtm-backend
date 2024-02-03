@@ -6,7 +6,6 @@ from .address import Address
 class UserCreate(BaseModel):
     name: str
     email: str
-    password: str
     company_id: Optional[int] = None
     role: int = 3
     address: Optional[Address]

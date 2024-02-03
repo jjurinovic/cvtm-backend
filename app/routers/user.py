@@ -6,6 +6,7 @@ from ..schemas.users import UserCreate, User, PasswordChange
 from ..schemas.pagination import PagedResponse, PageParams
 from ..pagination import filter
 from ..models import User as UserModel
+from ..email.send_email import send_registration_email
 
 router = APIRouter(
     tags=['users'],
@@ -14,8 +15,8 @@ router = APIRouter(
 
 
 @router.post('/', response_model=User, dependencies=[Depends(roles.RoleChecker(roles.Role.ADMIN))])
-def create_user(req: UserCreate, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
-    return user.create_user(req, db, current_user)
+async def create_user(req: UserCreate, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+    return await user.create_user(req, db, current_user)
 
 
 @router.put('/', response_model=User)

@@ -7,10 +7,12 @@ from ..services.company import is_user_in_company
 from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator
 from .address import create_address, update_address
 from ..hashing import Hash
+from ..email.send_email import send_registration_email
+import secrets
+import string
 
 
-def create_user(req: UserCreate, db: Session, current_user: User) -> User:
-
+async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
     if is_email_taken(req.email, db):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email is already taken")
@@ -20,16 +22,28 @@ def create_user(req: UserCreate, db: Session, current_user: User) -> User:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Company id must be same like your company id")
 
-    hashed_pwd = hashing.Hash.bcrypt(req.password)
     address = None
     if (req.address):
         address = create_address(req, db)
 
-    new_user = models.User(name=req.name, email=req.email,
-                           password=hashed_pwd, role=req.role, company_id=req.company_id, address=address)
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for i in range(10))
+    hashed_pwd = hashing.Hash.bcrypt(password)
+
+    new_user = models.User(name=req.name, email=req.email, password=hashed_pwd,
+                           role=req.role, company_id=req.company_id, address=address)
+
+    try:
+        await send_registration_email(
+            password=password,
+            recipient_email=new_user.email
+        )
+    except Exception as e:
+        print(e)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
     return new_user
 
 
