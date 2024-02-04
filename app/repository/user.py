@@ -11,6 +11,7 @@ from ..email.send_email import send_registration_email
 import secrets
 import string
 from ..roles import Role
+from datetime import datetime
 
 
 async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
@@ -35,7 +36,7 @@ async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
     password = ''.join(secrets.choice(alphabet) for i in range(10))
     hashed_pwd = hashing.Hash.bcrypt(password)
 
-    new_user = models.User(name=req.name, email=req.email, password=hashed_pwd,
+    new_user = models.User(first_name=req.first_name, last_name=req.last_name, email=req.email, password=hashed_pwd,
                            role=req.role, company_id=req.company_id, address=address)
 
     try:
@@ -71,6 +72,8 @@ def update_user(req: User, db: Session, current_user: User):
 
     for key, value in user_data.items():
         setattr(user, key, value) if key != 'address' else None
+
+    user.updated_date = datetime.now()
 
     db.add(user)
     db.commit()
@@ -108,7 +111,7 @@ def get_all_users(company_id: int, db: Session, current_user) -> List[User]:
 
 def create_root(req: UserCreate, db: Session) -> User:
     hashed_pwd = hashing.Hash.bcrypt(req.password)
-    new_user = models.User(name=req.name, email=req.email,
+    new_user = models.User(first_name=req.first_name, last_name=req.last_name, email=req.email,
                            password=hashed_pwd, role=roles.Role.ROOT.value, company_id=None)
     db.add(new_user)
     db.commit()

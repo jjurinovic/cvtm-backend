@@ -1,10 +1,12 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from .address import Address
+from datetime import datetime
 
 
 class UserCreate(BaseModel):
-    name: str
+    first_name: str
+    last_name: str
     email: EmailStr
     company_id: Optional[int] = None
     role: int = 3
@@ -13,11 +15,15 @@ class UserCreate(BaseModel):
 
 class User(BaseModel):
     id: int
-    name: str
+    first_name: str
+    last_name: str
     email: EmailStr
+    password_changed: Optional[bool] = False
     role: int = 3
     company_id: Optional[int] = None
     address: Optional[Address]
+    created_date: Optional[datetime] = None
+    updated_date: Optional[datetime] = None
 
     class Config():
         from_attributes = True
