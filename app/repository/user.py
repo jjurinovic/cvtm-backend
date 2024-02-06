@@ -12,6 +12,7 @@ import secrets
 import string
 from ..roles import Role
 from datetime import datetime
+from sqlalchemy import desc, asc
 
 
 async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
@@ -40,7 +41,7 @@ async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
     hashed_pwd = hashing.Hash.bcrypt(password)
 
     new_user = models.User(first_name=req.first_name, last_name=req.last_name, email=req.email, password=hashed_pwd,
-                           role=req.role, company_id=req.company_id, address=address)
+                           role=req.role, company_id=req.company_id, address=address, updated_date=datetime.now())
 
     try:
         # send email with username and password
@@ -138,7 +139,7 @@ def get_all_users(company_id: int, db: Session, current_user) -> List[User]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Company id must be same like your company id")
 
-    return db.query(models.User).filter(models.User.company_id == company_id)
+    return db.query(models.User).filter(models.User.company_id == company_id).order_by(desc(models.User.updated_date))
 
 
 def create_root(req: UserCreate, db: Session) -> User:
