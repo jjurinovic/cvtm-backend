@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from ..schemas.users import User, UserCreate, PasswordChange
 from typing import List
 from ..services.company import is_user_in_company
-from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator
+from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator, is_admin
 from .address import create_address, update_address
 from ..hashing import Hash
 from ..email.send_email import send_registration_email
@@ -62,6 +62,14 @@ def update_user(req: User, db: Session, current_user: User):
     if not is_root(current_user) and (is_user(current_user) or is_moderator(current_user)) and not is_id_same(req.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {req.id} not found")
+
+    if not is_root(current_user) and req.role == Role.ROOT:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Only ROOT user can change role to ROOT")
+
+    if (is_user(current_user) or is_moderator(current_user)) and req.role != current_user.role:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"You are not allowed to change your role")
 
     user = db.query(models.User).filter(models.User.id == req.id).first()
 
