@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from .address import Address
 from datetime import datetime
+from .company import Company
 
 
 class UserCreate(BaseModel):
@@ -24,6 +25,13 @@ class User(BaseModel):
     address: Optional[Address]
     created_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
+
+    class Config():
+        from_attributes = True
+
+
+class UserWithCompany(User):
+    company: Optional[Company] = None
 
     class Config():
         from_attributes = True

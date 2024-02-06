@@ -69,6 +69,8 @@ def update_user(req: User, db: Session, current_user: User):
 
     if (user.address):
         user.address = update_address(user.address, req.address, db)
+    else:
+        user.address = create_address(req, db)
 
     for key, value in user_data.items():
         setattr(user, key, value) if key != 'address' else None

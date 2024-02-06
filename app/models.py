@@ -23,6 +23,7 @@ class User(Base):
     email = Column(String)
     password = Column(String)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
+    company = relationship("Company")
     role = Column(Integer)
     address_id = Column(Integer, ForeignKey("addresses.id"))
     address = relationship("Address")

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from .. import database, roles, auth
 from sqlalchemy.orm import Session
 from ..repository import user
-from ..schemas.users import UserCreate, User, PasswordChange
+from ..schemas.users import UserCreate, User, PasswordChange, UserWithCompany
 from ..schemas.pagination import PagedResponse, PageParams
 from ..pagination import filter
 from ..models import User as UserModel
@@ -29,8 +29,8 @@ def create_root_user(req: UserCreate, db: Session = Depends(database.get_db)):
     return user.create_root(req, db)
 
 
-@router.get('/me', response_model=User)
-def get_current_user(current_user: User = Depends(auth.get_current_user)):
+@router.get('/me', response_model=UserWithCompany)
+def get_current_user(current_user: UserWithCompany = Depends(auth.get_current_user)):
     return current_user
 
 

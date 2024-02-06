@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from ..schemas.users import User
+from ..schemas.users import UserWithCompany
 
 
 class Login(BaseModel):
@@ -10,7 +10,7 @@ class Login(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
-    user: User
+    user: UserWithCompany
 
 
 class TokenData(BaseModel):
