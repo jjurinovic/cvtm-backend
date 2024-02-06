@@ -24,6 +24,11 @@ def update_user(req: User, db: Session = Depends(database.get_db), current_user:
     return user.update_user(req, db, current_user)
 
 
+@router.delete('/{id}', dependencies=[Depends(roles.RoleChecker(roles.Role.ADMIN))])
+def delete_user(id: int, db: Session = Depends(database.get_db), current_user: UserWithCompany = Depends(auth.get_current_user)):
+    return user.delete_user(id, db, current_user)
+
+
 @router.post('/root', response_model=User)
 def create_root_user(req: UserCreate, db: Session = Depends(database.get_db)):
     return user.create_root(req, db)

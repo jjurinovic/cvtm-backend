@@ -15,10 +15,12 @@ from datetime import datetime
 
 
 async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
+    # Root can only create another root
     if not is_root(current_user) and req.role == Role.ROOT:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Only ROOT user can create another root user")
 
+    # check if email is already taken
     if is_email_taken(req.email, db):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email is already taken")
@@ -32,6 +34,7 @@ async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
     if (req.address):
         address = create_address(req, db)
 
+    # create random password
     alphabet = string.ascii_letters + string.digits
     password = ''.join(secrets.choice(alphabet) for i in range(10))
     hashed_pwd = hashing.Hash.bcrypt(password)
@@ -40,12 +43,14 @@ async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
                            role=req.role, company_id=req.company_id, address=address)
 
     try:
+        # send email with username and password
         await send_registration_email(
             password=password,
             recipient_email=new_user.email
         )
     except Exception as e:
         print(e)
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -59,14 +64,17 @@ def update_user(req: User, db: Session, current_user: User):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Company id must be same like your company id")
 
+    # don't allow USER and MODERATOR to update other users than themself
     if not is_root(current_user) and (is_user(current_user) or is_moderator(current_user)) and not is_id_same(req.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {req.id} not found")
 
+    #  Only ROOT can change role to ROOT
     if not is_root(current_user) and req.role == Role.ROOT:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Only ROOT user can change role to ROOT")
 
+    # USER or ADMIN can't change their roles
     if (is_user(current_user) or is_moderator(current_user)) and req.role != current_user.role:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"You are not allowed to change your role")
@@ -91,10 +99,24 @@ def update_user(req: User, db: Session, current_user: User):
     return user
 
 
+def delete_user(id: int, db: Session, current_user: User):
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    # don't allow admin to delete user from another company
+    if not is_user_in_company(user.company_id, current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Company id must be same like your company id")
+
+    db.delete(user)
+    db.commit()
+    return {'detail': 'Successfully deleted user'}
+
+
 def get_user(id: int, db: Session, current_user: User) -> User:
     not_found_exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                         detail=f"User with id {id} not found")
 
+    # don't allow user to get another user data
     if is_user(current_user) and not is_id_same(id, current_user.id):
         raise not_found_exception
 
@@ -103,7 +125,7 @@ def get_user(id: int, db: Session, current_user: User) -> User:
     if is_root(current_user):
         return user
 
-    print(user.company_id, current_user.company_id)
+    # check if user is in same company
     if not is_user_in_company(user.company_id, current_user) or not user:
         raise not_found_exception
 
