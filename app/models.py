@@ -30,6 +30,8 @@ class User(Base):
     created_date = Column(DateTime, default=datetime.now())
     updated_date = Column(DateTime)
     password_changed = Column(Boolean)
+    deleted = Column(Boolean, default=False)
+    inactive = Column(Boolean, default=False)
 
 
 class Company(Base):

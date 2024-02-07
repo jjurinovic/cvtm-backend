@@ -25,6 +25,7 @@ class User(BaseModel):
     address: Optional[Address]
     created_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
+    inactive: bool = False
 
     class Config():
         from_attributes = True
@@ -32,6 +33,13 @@ class User(BaseModel):
 
 class UserWithCompany(User):
     company: Optional[Company] = None
+
+    class Config():
+        from_attributes = True
+
+
+class UserWithDeleted(UserWithCompany):
+    deleted: bool
 
     class Config():
         from_attributes = True

@@ -113,6 +113,28 @@ def delete_user(id: int, db: Session, current_user: User):
     return {'detail': 'Successfully deleted user'}
 
 
+def soft_delete_user(id: int, db: Session, current_user: User):
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {id} not found")
+
+    # don't allow admin to delete user from another company
+    if not is_user_in_company(user.company_id, current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Company id must be same like your company id")
+    user.deleted = True
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        print(e)
+
+    return user
+
+
 def get_user(id: int, db: Session, current_user: User) -> User:
     not_found_exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                         detail=f"User with id {id} not found")
