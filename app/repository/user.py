@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from ..schemas.users import User, UserCreate, PasswordChange, UserWithDeleted
 from typing import List
 from ..services.company import is_user_in_company
-from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator, is_admin, is_deleted, is_inactive
+from ..services import user as user_service
 from .address import create_address, update_address
 from ..hashing import Hash
 from ..email.send_email import send_registration_email
@@ -17,17 +17,17 @@ from sqlalchemy import desc, asc
 
 async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
     # Root can only create another root
-    if not is_root(current_user) and req.role == Role.ROOT:
+    if not user_service.is_root(current_user) and req.role == Role.ROOT:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Only ROOT user can create another root user")
 
     # check if email is already taken
-    if is_email_taken(req.email, db):
+    if user_service.is_email_taken(req.email, db):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email is already taken")
 
     # don't allow admin to create user to another company
-    if not is_user_in_company(req.company_id, current_user):
+    if not user_service.is_user_in_company(req.company_id, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Company id must be same like your company id")
 
@@ -66,24 +66,24 @@ def update_user(req: User, db: Session, current_user: User):
                             detail=f"Company id must be same like your company id")
 
     # don't allow USER and MODERATOR to update other users than themself
-    if not is_root(current_user) and (is_user(current_user) or is_moderator(current_user)) and not is_id_same(req.id, current_user.id):
+    if not user_service.is_root(current_user) and (user_service.is_user(current_user) or user_service.is_moderator(current_user)) and not user_service.is_id_same(req.id, current_user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {req.id} not found")
 
     #  Only ROOT can change role to ROOT
-    if not is_root(current_user) and req.role == Role.ROOT:
+    if not user_service.is_root(current_user) and req.role == Role.ROOT:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Only ROOT user can change role to ROOT")
 
     # USER or ADMIN can't change their roles
-    if (is_user(current_user) or is_moderator(current_user)) and req.role != current_user.role:
+    if (user_service.is_user(current_user) or user_service.is_moderator(current_user)) and req.role != current_user.role:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"You are not allowed to change your role")
 
     user = db.query(models.User).filter(models.User.id == req.id).first()
 
     # don't allow to update deleted user
-    if is_deleted(user) or is_inactive(user):
+    if user_service.is_deleted(user) or user_service.is_inactive(user):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {req.id} not found")
 
@@ -97,7 +97,8 @@ def update_user(req: User, db: Session, current_user: User):
     for key, value in user_data.items():
         setattr(user, key, value) if key != 'address' else None
 
-    user.updated_date = datetime.now()
+    # set updated date
+    user = user_service.set_updated(user)
 
     db.add(user)
     db.commit()
@@ -129,7 +130,11 @@ def soft_delete_user(id: int, db: Session, current_user: User) -> User:
     if not is_user_in_company(user.company_id, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Company id must be same like your company id")
+
     user.deleted = True
+    # set updated date
+    user = user_service.set_updated(user)
+
     try:
         db.add(user)
         db.commit()
@@ -144,7 +149,7 @@ def change_user_status(id: int, db: Session, current_user: User) -> User:
     user = db.query(models.User).filter(models.User.id == id).first()
 
     # don't allow to update deleted user
-    if is_deleted(user):
+    if user_service.is_deleted(user):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {id} not found")
 
@@ -158,6 +163,10 @@ def change_user_status(id: int, db: Session, current_user: User) -> User:
                             detail=f"Company id must be same like your company id")
 
     user.inactive = not user.inactive
+
+    # set updated time
+    user = user_service.set_updated(user)
+
     try:
         db.add(user)
         db.commit()
@@ -176,6 +185,10 @@ def restore(id: int, db: Session) -> User:
                             detail=f"User with id {id} not found")
 
     user.deleted = False
+
+    # set updated date
+    user = user_service.set_updated(user)
+
     try:
         db.add(user)
         db.commit()
@@ -191,16 +204,16 @@ def get_user(id: int, db: Session, current_user: User) -> User:
                                         detail=f"User with id {id} not found")
 
     # don't allow user to get another user data
-    if is_user(current_user) and not is_id_same(id, current_user.id):
+    if user_service.is_user(current_user) and not user_service.is_id_same(id, current_user.id):
         raise not_found_exception
 
     user = db.query(models.User).filter(models.User.id == id).first()
 
-    if is_root(current_user):
+    if user_service.is_root(current_user):
         return UserWithDeleted(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, password_changed=user.password_changed, role=user.role, company_id=user.company_id, created_date=user.created_date, updated_date=user.updated_date, inactive=user.inactive, deleted=user.deleted, address=user.address)
 
     # don't allow to get deleted or inactive user
-    if is_deleted(user) or is_inactive(user):
+    if user_service.is_deleted(user) or user_service.is_inactive(user):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {id} not found")
 
@@ -232,7 +245,7 @@ def create_root(req: UserCreate, db: Session) -> User:
 
 def password_change(req: PasswordChange, db: Session, current_user: UserCreate):
     # don't allow to update deleted or inactive user
-    if is_deleted(current_user) or is_inactive(current_user):
+    if user_service.is_deleted(current_user) or user_service.is_inactive(current_user):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {req.id} not found")
 
@@ -241,6 +254,9 @@ def password_change(req: PasswordChange, db: Session, current_user: UserCreate):
             status_code=status.HTTP_404_NOT_FOUND, detail='Invalid password')
 
     current_user.password = hashing.Hash.bcrypt(req.new_password)
+
+    # set updated date
+    user_service.set_updated(current_user)
 
     db.add(current_user)
     db.commit()

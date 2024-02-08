@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from ..schemas.users import User
 from .. import models, roles
+from datetime import datetime
 
 
 def is_email_taken(email: str, db: Session) -> bool:
@@ -38,3 +39,8 @@ def is_deleted(user: User) -> bool:
 
 def is_inactive(user: User) -> bool:
     return user.inactive
+
+
+def set_updated(user: User):
+    user.updated_date = datetime.now()
+    return user
