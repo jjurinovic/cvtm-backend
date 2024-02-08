@@ -30,3 +30,11 @@ def is_moderator(current_user: User) -> bool:
 
 def is_user(current_user: User) -> bool:
     return current_user.role == roles.Role.USER
+
+
+def is_deleted(user: User) -> bool:
+    return user.deleted
+
+
+def is_inactive(user: User) -> bool:
+    return user.inactive

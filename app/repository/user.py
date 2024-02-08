@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from ..schemas.users import User, UserCreate, PasswordChange, UserWithDeleted
 from typing import List
 from ..services.company import is_user_in_company
-from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator, is_admin
+from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator, is_admin, is_deleted, is_inactive
 from .address import create_address, update_address
 from ..hashing import Hash
 from ..email.send_email import send_registration_email
@@ -82,6 +82,11 @@ def update_user(req: User, db: Session, current_user: User):
 
     user = db.query(models.User).filter(models.User.id == req.id).first()
 
+    # don't allow to update deleted user
+    if is_deleted(user) or is_inactive(user):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {req.id} not found")
+
     user_data = req.model_dump(exclude_unset=True)
 
     if (user.address):
@@ -138,6 +143,11 @@ def soft_delete_user(id: int, db: Session, current_user: User):
 def change_user_status(id: int, db: Session, current_user: User):
     user = db.query(models.User).filter(models.User.id == id).first()
 
+    # don't allow to update deleted user
+    if is_deleted(user):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {id} not found")
+
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id {id} not found")
@@ -189,6 +199,11 @@ def get_user(id: int, db: Session, current_user: User) -> User:
     if is_root(current_user):
         return UserWithDeleted(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, password_changed=user.password_changed, role=user.role, company_id=user.company_id, created_date=user.created_date, updated_date=user.updated_date, inactive=user.inactive, deleted=user.deleted, address=user.address)
 
+    # don't allow to get deleted or inactive user
+    if is_deleted(user) or is_inactive(user):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {id} not found")
+
     # check if user is in same company
     if not is_user_in_company(user.company_id, current_user) or not user:
         raise not_found_exception
@@ -216,6 +231,11 @@ def create_root(req: UserCreate, db: Session) -> User:
 
 
 def password_change(req: PasswordChange, db: Session, current_user: UserCreate):
+    # don't allow to update deleted or inactive user
+    if is_deleted(current_user) or is_inactive(current_user):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {req.id} not found")
+
     if not Hash.verify(current_user.password, req.old_password):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail='Invalid password')
