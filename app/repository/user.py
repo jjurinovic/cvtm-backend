@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from .. import models, hashing, roles
 from fastapi import HTTPException, status
-from ..schemas.users import User, UserCreate, PasswordChange
+from ..schemas.users import User, UserCreate, PasswordChange, UserWithDeleted
 from typing import List
 from ..services.company import is_user_in_company
 from ..services.user import is_email_taken, is_root, is_user, is_id_same, is_moderator, is_admin
@@ -132,6 +132,47 @@ def soft_delete_user(id: int, db: Session, current_user: User):
     except Exception as e:
         print(e)
 
+    return {'detail': 'Successfully deleted user'}
+
+
+def change_user_status(id: int, db: Session, current_user: User):
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {id} not found")
+
+    # don't allow admin to delete user from another company
+    if not is_user_in_company(user.company_id, current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Company id must be same like your company id")
+
+    user.inactive = not user.inactive
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        print(e)
+
+    return user
+
+
+def restore(id: int, db: Session):
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {id} not found")
+
+    user.deleted = False
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        print(e)
+
     return user
 
 
@@ -146,7 +187,7 @@ def get_user(id: int, db: Session, current_user: User) -> User:
     user = db.query(models.User).filter(models.User.id == id).first()
 
     if is_root(current_user):
-        return user
+        return UserWithDeleted(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, password_changed=user.password_changed, role=user.role, company_id=user.company_id, created_date=user.created_date, updated_date=user.updated_date, inactive=user.inactive, deleted=user.deleted, address=user.address)
 
     # check if user is in same company
     if not is_user_in_company(user.company_id, current_user) or not user:

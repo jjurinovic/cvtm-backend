@@ -7,6 +7,7 @@ from ..schemas.pagination import PagedResponse, PageParams
 from ..pagination import filter
 from ..models import User as UserModel
 from ..email.send_email import send_registration_email
+from typing import Union
 
 router = APIRouter(
     tags=['users'],
@@ -34,6 +35,16 @@ def soft_delete_user(id: int, db: Session = Depends(database.get_db), current_us
     return user.soft_delete_user(id, db, current_user)
 
 
+@router.put('/{id}/status-change', response_model=UserWithDeleted, dependencies=[Depends(roles.RoleChecker(roles.Role.ADMIN))])
+def change_user_status(id: int, db: Session = Depends(database.get_db), current_user: UserWithCompany = Depends(auth.get_current_user)):
+    return user.change_user_status(id, db, current_user)
+
+
+@router.put('/{id}/restore', response_model=UserWithDeleted, dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
+def restore_user(id: int, db: Session = Depends(database.get_db), current_user: UserWithCompany = Depends(auth.get_current_user)):
+    return user.restore(id, db)
+
+
 @router.post('/root', response_model=User)
 def create_root_user(req: UserCreate, db: Session = Depends(database.get_db)):
     return user.create_root(req, db)
@@ -44,7 +55,7 @@ def get_current_user(current_user: UserWithCompany = Depends(auth.get_current_us
     return current_user
 
 
-@router.get('/{id}', response_model=User)
+@router.get('/{id}', response_model=Union[User, UserWithDeleted])
 def get_user(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
     return user.get_user(id, db, current_user)
 
