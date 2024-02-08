@@ -118,7 +118,7 @@ def delete_user(id: int, db: Session, current_user: User):
     return {'detail': 'Successfully deleted user'}
 
 
-def soft_delete_user(id: int, db: Session, current_user: User):
+def soft_delete_user(id: int, db: Session, current_user: User) -> User:
     user = db.query(models.User).filter(models.User.id == id).first()
 
     if not user:
@@ -137,10 +137,10 @@ def soft_delete_user(id: int, db: Session, current_user: User):
     except Exception as e:
         print(e)
 
-    return {'detail': 'Successfully deleted user'}
+    return user
 
 
-def change_user_status(id: int, db: Session, current_user: User):
+def change_user_status(id: int, db: Session, current_user: User) -> User:
     user = db.query(models.User).filter(models.User.id == id).first()
 
     # don't allow to update deleted user
@@ -168,7 +168,7 @@ def change_user_status(id: int, db: Session, current_user: User):
     return user
 
 
-def restore(id: int, db: Session):
+def restore(id: int, db: Session) -> User:
     user = db.query(models.User).filter(models.User.id == id).first()
 
     if not user:
