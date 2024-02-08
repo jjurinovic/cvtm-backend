@@ -7,6 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from ..token import ACCESS_TOKEN_EXPIRE_MINUTES
 from ..schemas.auth import LoginResponse
+from ..services.user import is_inactive, is_deleted
 
 
 router = APIRouter(
@@ -19,7 +20,7 @@ def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(data
     user = db.query(models.User).filter(
         models.User.email == req.username).first()
 
-    if not user:
+    if not user or is_inactive(user) or is_deleted(user):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail='Invalid credentials')
 
