@@ -22,8 +22,9 @@ class User(Base):
     last_name = Column(String)
     email = Column(String)
     password = Column(String)
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
-    company = relationship("Company")
+    company_id = Column(Integer, ForeignKey(
+        "companies.id", ondelete="CASCADE"), nullable=True)
+    company = relationship("Company", back_populates="users")
     role = Column(Integer)
     address_id = Column(Integer, ForeignKey("addresses.id"))
     address = relationship("Address", cascade="all, delete")
@@ -46,7 +47,8 @@ class Company(Base):
     created_date = Column(DateTime, default=datetime.now())
     updated_date = Column(DateTime)
     updated_by = Column(Integer)
-    users = relationship("User", cascade="all,delete", backref="companies")
+    users = relationship("User", cascade="all,delete",
+                         back_populates="company")
 
 
 class Day(Base):
