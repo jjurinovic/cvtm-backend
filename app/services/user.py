@@ -41,6 +41,7 @@ def is_inactive(user: User) -> bool:
     return user.inactive
 
 
-def set_updated(user: User):
+def set_updated(user: User, current_user: User):
     user.updated_date = datetime.now()
+    user.updated_by = current_user.id
     return user

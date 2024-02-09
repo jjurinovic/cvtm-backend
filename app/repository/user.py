@@ -27,7 +27,7 @@ async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
                             detail="Email is already taken")
 
     # don't allow admin to create user to another company
-    if not user_service.is_user_in_company(req.company_id, current_user):
+    if not is_user_in_company(req.company_id, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Company id must be same like your company id")
 
@@ -41,7 +41,7 @@ async def create_user(req: UserCreate, db: Session, current_user: User) -> User:
     hashed_pwd = hashing.Hash.bcrypt(password)
 
     new_user = models.User(first_name=req.first_name, last_name=req.last_name, email=req.email, password=hashed_pwd,
-                           role=req.role, company_id=req.company_id, address=address, updated_date=datetime.now())
+                           role=req.role, company_id=req.company_id, address=address, updated_date=datetime.now(), updated_by=current_user.id)
 
     try:
         # send email with username and password
@@ -98,7 +98,7 @@ def update_user(req: User, db: Session, current_user: User):
         setattr(user, key, value) if key != 'address' else None
 
     # set updated date
-    user = user_service.set_updated(user)
+    user = user_service.set_updated(user, current_user)
 
     db.add(user)
     db.commit()
@@ -133,7 +133,7 @@ def soft_delete_user(id: int, db: Session, current_user: User) -> User:
 
     user.deleted = True
     # set updated date
-    user = user_service.set_updated(user)
+    user = user_service.set_updated(user, current_user)
 
     try:
         db.add(user)
@@ -165,7 +165,7 @@ def change_user_status(id: int, db: Session, current_user: User) -> User:
     user.inactive = not user.inactive
 
     # set updated time
-    user = user_service.set_updated(user)
+    user = user_service.set_updated(user, current_user)
 
     try:
         db.add(user)
@@ -187,7 +187,7 @@ def restore(id: int, db: Session) -> User:
     user.deleted = False
 
     # set updated date
-    user = user_service.set_updated(user)
+    user = user_service.set_updated(user, current_user)
 
     try:
         db.add(user)
@@ -256,7 +256,7 @@ def password_change(req: PasswordChange, db: Session, current_user: UserCreate):
     current_user.password = hashing.Hash.bcrypt(req.new_password)
 
     # set updated date
-    user_service.set_updated(current_user)
+    user_service.set_updated(current_user, current_user)
 
     db.add(current_user)
     db.commit()

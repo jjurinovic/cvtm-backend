@@ -10,7 +10,7 @@ from ..email.send_email import send_registration_email
 from typing import Union
 
 router = APIRouter(
-    tags=['users'],
+    tags=['Users'],
     prefix="/user"
 )
 
