@@ -32,6 +32,7 @@ class User(Base):
     password_changed = Column(Boolean)
     deleted = Column(Boolean, default=False)
     inactive = Column(Boolean, default=False)
+    updated_by = Column(Integer)
 
 
 class Company(Base):
@@ -41,6 +42,10 @@ class Company(Base):
     vat = Column(String)
     address_id = Column(Integer, ForeignKey("addresses.id"))
     address = relationship("Address")
+    inactive = Column(Boolean, default=False)
+    created_date = Column(DateTime, default=datetime.now())
+    updated_date = Column(DateTime)
+    updated_by = Column(Integer)
 
 
 class Day(Base):

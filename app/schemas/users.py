@@ -26,6 +26,7 @@ class User(BaseModel):
     created_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
     inactive: bool = False
+    updated_by: Optional[int] = None
 
     class Config():
         from_attributes = True
