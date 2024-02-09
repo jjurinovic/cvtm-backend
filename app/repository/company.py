@@ -81,7 +81,7 @@ def change_company_status(id: int, db: Session, current_user: User) -> Company:
     company = company_service.set_updated(company, current_user)
 
     db.add(company)
-    db.commit(company)
+    db.commit()
     db.refresh(company)
 
     return company
