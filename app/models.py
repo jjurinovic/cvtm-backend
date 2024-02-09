@@ -46,7 +46,7 @@ class Company(Base):
     created_date = Column(DateTime, default=datetime.now())
     updated_date = Column(DateTime)
     updated_by = Column(Integer)
-    children = relationship("User", cascade="all,delete", backref="companies")
+    users = relationship("User", cascade="all,delete", backref="companies")
 
 
 class Day(Base):

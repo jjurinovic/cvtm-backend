@@ -8,7 +8,7 @@ from datetime import timedelta
 from ..token import ACCESS_TOKEN_EXPIRE_MINUTES
 from ..schemas.auth import LoginResponse
 from ..services.user import is_inactive, is_deleted
-
+from ..schemas.users import UserWithCompany
 
 router = APIRouter(
     tags=['Auth']
@@ -20,7 +20,8 @@ def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(data
     user = db.query(models.User).filter(
         models.User.email == req.username).first()
 
-    if not user or is_inactive(user) or is_deleted(user):
+    # disable login if user is inactive or delete and company is inactive
+    if not user or is_inactive(user) or is_deleted(user) or (not user.role == 0 and user.company.inactive):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail='Invalid credentials')
 
