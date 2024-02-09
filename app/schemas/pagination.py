@@ -16,11 +16,15 @@ class PageParams(BaseModel):
 T = TypeVar("T")
 
 
-class PagedResponse(BaseModel, Generic[T]):
+class PageFilter(BaseModel):
     total: int
     page: int
     size: int
     sort: Optional[str] = None
     sort_field: Optional[str] = None
     q: Optional[str] = None
+
+
+class PagedResponse(BaseModel, Generic[T]):
+    page_filter: PageFilter
     results: List[T]

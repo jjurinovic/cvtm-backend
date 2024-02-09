@@ -1,4 +1,4 @@
-from .schemas.pagination import PageParams, PagedResponse, T
+from .schemas.pagination import PageParams, PagedResponse, T, PageFilter
 from pydantic import BaseModel
 from .schemas.address import Address
 from sqlalchemy import desc, asc, or_
@@ -28,12 +28,12 @@ def filter(page_params: PageParams, query: Query, ResponseSchema: BaseModel, Res
         (page_params.page - 1) * page_params.size).limit(page_params.size)
 
     return PagedResponse(
-        total=query.count(),
-        page=page_params.page,
-        size=page_params.size,
-        sort=page_params.sort,
-        sort_field=page_params.sort_field,
-        q=page_params.q,
+        page_filter=PageFilter(total=query.count(), page=page_params.page,
+                               size=page_params.size,
+                               sort=page_params.sort,
+                               sort_field=page_params.sort_field,
+                               q=page_params.q),
+
         results=[ResponseSchema.model_validate(
             item) for item in paginated_query.all()]
     )
