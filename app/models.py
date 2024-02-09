@@ -26,7 +26,7 @@ class User(Base):
     company = relationship("Company")
     role = Column(Integer)
     address_id = Column(Integer, ForeignKey("addresses.id"))
-    address = relationship("Address")
+    address = relationship("Address", cascade="all, delete")
     created_date = Column(DateTime, default=datetime.now())
     updated_date = Column(DateTime)
     password_changed = Column(Boolean)
@@ -41,11 +41,12 @@ class Company(Base):
     name = Column(String)
     vat = Column(String)
     address_id = Column(Integer, ForeignKey("addresses.id"))
-    address = relationship("Address")
+    address = relationship("Address", cascade="all,delete")
     inactive = Column(Boolean, default=False)
     created_date = Column(DateTime, default=datetime.now())
     updated_date = Column(DateTime)
     updated_by = Column(Integer)
+    children = relationship("User", cascade="all,delete", backref="companies")
 
 
 class Day(Base):
