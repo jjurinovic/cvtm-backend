@@ -16,8 +16,8 @@ router = APIRouter(
 
 
 @router.post('/', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
-def create_company(req: CompanyCreate, db: Session = Depends(database.get_db)):
-    return company.create_company(req, db)
+def create_company(req: CompanyCreate, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+    return company.create_company(req, db, current_user)
 
 
 @router.get('/{id}', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ADMIN))])
@@ -34,3 +34,13 @@ def update_company(req: Company, db: Session = Depends(database.get_db), current
 def get_all_companies(page_params: PageParams = Depends(PageParams), db: Session = Depends(database.get_db)):
     query = company.get_all_companies(db)
     return filter(page_params, query, Company, c, ['name', 'vat'])
+
+
+@router.delete('/{id}', dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
+def delete_company(id: int, db: Session = Depends(database.get_db)):
+    return company.delete_company(id, db)
+
+
+@router.put('/{id}/status-change', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
+def change_company_status(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+    return company.change_company_status(id, db, current_user)
