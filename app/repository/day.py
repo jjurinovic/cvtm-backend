@@ -7,10 +7,19 @@ from ..schemas.users import User
 from typing import List
 from ..services.company import is_user_in_company
 from ..services.date import str_to_date, is_start_before_end
+from ..services.user import is_root
 
 
 def create_day(req: DayCreate, db: Session, current_user: User) -> Day:
+
     date = str_to_date(req.date)
+
+    day = db.query(models.Day).filter(models.Day.user_id ==
+                                      req.user_id).filter(models.Day.date == date).first()
+
+    if day:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Day with given date exists")
     new_day = models.Day(
         date=date, company_id=req.company_id, user_id=req.user_id)
     db.add(new_day)
@@ -19,13 +28,17 @@ def create_day(req: DayCreate, db: Session, current_user: User) -> Day:
     return new_day
 
 
-def get_day(id: int, db: Session, current_user: User) -> Day:
+def get_day(user_id: int, date: str, db: Session, current_user: User) -> Day:
     # find compy by id
-    day = db.query(models.Day).filter(models.Day.id == id).first()
+    day = db.query(models.Day).filter(models.Day.user_id ==
+                                      user_id).filter(models.Day.date == date).first()
 
     if not day:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Day with id {id} not found")
+                            detail=f"Day with date {date} not found")
+
+    if is_root(current_user):
+        return day
 
     # don't allow to return company if company not belongs to admin or user is not root
     if is_user_in_company(day.company_id, current_user):
