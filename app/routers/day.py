@@ -28,6 +28,11 @@ def create_entry(req: TimeEntryCreate, db: Session = Depends(database.get_db), c
     return day.create_entry(req, db, current_user)
 
 
+@router.put('/entry', response_model=TimeEntry)
+def update_entry(req: TimeEntry, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+    return day.update_entry(req, db, current_user)
+
+
 @router.get('/list', status_code=status.HTTP_200_OK, response_model=List[Day])
 def get_days(company_id: int, user_id: int, start: Optional[str] = None, end: Optional[str] = None, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
     return day.get_days(company_id, user_id, start, end, db, current_user)

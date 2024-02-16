@@ -57,6 +57,25 @@ def create_entry(req: TimeEntryCreate, db: Session, current_user: User) -> TimeE
     return new_entry
 
 
+def update_entry(req: TimeEntry, db: Session, current_user: User) -> TimeEntry:
+    entry = db.query(models.TimeEntry).filter(
+        models.TimeEntry.id == req.id).first()
+
+    if not entry:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Entry with id {req.id} not found")
+
+    entry_data = req.model_dump(exclude_unset=True)
+
+    for key, value in entry_data.items():
+        setattr(entry, key, value)
+
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
 def get_days(company_id: int, user_id: int, start: str, end: str, db: Session, current_user: User) -> List[Day]:
     start_date = datetime.strptime(start, '%Y-%m-%d').date() if start else None
     end_date = datetime.strptime(end, '%Y-%m-%d').date() if end else None
