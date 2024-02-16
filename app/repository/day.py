@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from .. import models, roles
 from fastapi import HTTPException, status
 from datetime import datetime
-from ..schemas.days import Day, DayCreate, TimeEntry
+from ..schemas.days import Day, DayCreate, TimeEntry, TimeEntryCreate
 from ..schemas.users import User
 from typing import List
 from ..services.company import is_user_in_company
@@ -41,16 +41,16 @@ def get_day(user_id: int, date: str, db: Session, current_user: User) -> Day:
         return day
 
     # don't allow to return company if company not belongs to admin or user is not root
-    if is_user_in_company(day.company_id, current_user):
+    if not is_user_in_company(day.company_id, current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Forbidden")
 
     return day
 
 
-def create_entry(req: TimeEntry, db: Session, current_user: User) -> TimeEntry:
+def create_entry(req: TimeEntryCreate, db: Session, current_user: User) -> TimeEntry:
     new_entry = models.TimeEntry(
-        start_time=req.start_time, end_time=req.end_time, pause=req.pause, notes=req.notes, day_id=req.day_id)
+        start_time=req.start_time, end_time=req.end_time, date=req.date, pause=req.pause, title=req.title, notes=req.notes, day_id=req.day_id, user_id=req.user_id)
     db.add(new_entry)
     db.commit()
     db.refresh(new_entry)

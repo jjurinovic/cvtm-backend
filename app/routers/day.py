@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from .. import database, auth
-from ..schemas.days import Day, DayCreate, TimeEntry
+from ..schemas.days import Day, DayCreate, TimeEntry, TimeEntryCreate
 from ..schemas.users import User
 from sqlalchemy.orm import Session
 from ..repository import day
@@ -24,7 +24,7 @@ def get_day(user_id: int, date: str, db: Session = Depends(database.get_db), cur
 
 
 @router.post('/entry', response_model=TimeEntry)
-def create_entry(req: TimeEntry, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+def create_entry(req: TimeEntryCreate, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
     return day.create_entry(req, db, current_user)
 
 
