@@ -69,5 +69,6 @@ class TimeEntry(Base):
     pause = Column(Integer)
     notes = Column(String)
     title = Column(String)
+    color = Column(String)
     date = Column(DateTime)
     user_id = Column(Integer, ForeignKey("users.id"))

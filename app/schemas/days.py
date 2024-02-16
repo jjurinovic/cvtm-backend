@@ -13,6 +13,7 @@ class TimeEntryCreate(BaseModel):
     date: date
     title: str
     user_id: int
+    color: Optional[str] = None
 
 
 class TimeEntry(TimeEntryCreate):

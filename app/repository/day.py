@@ -50,7 +50,7 @@ def get_day(user_id: int, date: str, db: Session, current_user: User) -> Day:
 
 def create_entry(req: TimeEntryCreate, db: Session, current_user: User) -> TimeEntry:
     new_entry = models.TimeEntry(
-        start_time=req.start_time, end_time=req.end_time, date=req.date, pause=req.pause, title=req.title, notes=req.notes, day_id=req.day_id, user_id=req.user_id)
+        start_time=req.start_time, end_time=req.end_time, date=req.date, pause=req.pause, title=req.title, notes=req.notes, day_id=req.day_id, user_id=req.user_id, color=req.color)
     db.add(new_entry)
     db.commit()
     db.refresh(new_entry)
