@@ -68,7 +68,8 @@ def update_entry(req: TimeEntry, db: Session, current_user: User) -> TimeEntry:
     entry_data = req.model_dump(exclude_unset=True)
 
     for key, value in entry_data.items():
-        setattr(entry, key, value)
+        setattr(entry, key, value) if key not in [
+            'day_id', 'date', 'user_id'] else None
 
     db.add(entry)
     db.commit()
