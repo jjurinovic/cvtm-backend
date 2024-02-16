@@ -68,3 +68,6 @@ class TimeEntry(Base):
     day_id = Column(Integer, ForeignKey("days.id"))
     pause = Column(Integer)
     notes = Column(String)
+    title = Column(String)
+    date = Column(DateTime)
+    user_id = Column(Integer, ForeignKey("users.id"))
