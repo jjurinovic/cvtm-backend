@@ -7,8 +7,8 @@ from ..repository import time_entry
 from typing import Optional
 
 router = APIRouter(
-    tags=['Time Entries'],
-    prefix="/time-entries"
+    tags=['Time Entry'],
+    prefix="/time-entry"
 )
 
 
