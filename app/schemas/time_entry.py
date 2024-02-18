@@ -5,14 +5,14 @@ from datetime import date, time, timedelta
 
 
 class TimeEntryCreate(BaseModel):
-    day_id: int
+    company_id: int
+    user_id: int
     start_time: time
     end_time: time
     pause: Optional[int] = None
     notes: Optional[str] = None
     date: date
     title: str
-    user_id: int
     color: Optional[str] = None
 
 
@@ -23,17 +23,13 @@ class TimeEntry(TimeEntryCreate):
     @field_validator("total", mode="before")
     @classmethod
     def transform(cls, raw: timedelta) -> int:
-        return raw.seconds
+        return raw.seconds / 60
+
+    class Config():
+        from_attributes = True
 
 
-class DayCreate(BaseModel):
-    date: str
-    user_id: int
-    company_id: int
-
-
-class Day(DayCreate):
-    id: int
+class TimeEntriesDay(BaseModel):
     date: date
     entries: List[TimeEntry]
 

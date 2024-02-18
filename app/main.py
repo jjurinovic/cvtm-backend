@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import user, company, auth, day
+from .routers import user, company, auth, time_entry
 from . import models
 from .database import engine
 from datetime import date
@@ -25,4 +25,4 @@ models.Base.metadata.create_all(engine)
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(company.router)
-app.include_router(day.router)
+app.include_router(time_entry.router)

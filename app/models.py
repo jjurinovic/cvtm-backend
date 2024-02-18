@@ -51,25 +51,16 @@ class Company(Base):
                          back_populates="company")
 
 
-class Day(Base):
-    __tablename__ = 'days'
-    id = Column(Integer, primary_key=True, index=True)
-    date = Column(Date)
-    company_id = Column(Integer, ForeignKey("companies.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
-    entries = relationship("TimeEntry", backref="days")
-
-
 class TimeEntry(Base):
     __tablename__ = 'time_entries'
     id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
     start_time = Column(Time)
     end_time = Column(Time)
-    day_id = Column(Integer, ForeignKey("days.id"))
     pause = Column(Integer)
     notes = Column(String)
     title = Column(String)
     color = Column(String)
     date = Column(DateTime)
-    user_id = Column(Integer, ForeignKey("users.id"))
     total = column_property(end_time - start_time)
