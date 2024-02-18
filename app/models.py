@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, DateTime, Boolean
 from .database import Base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property
 from datetime import datetime
 
 
@@ -72,3 +72,4 @@ class TimeEntry(Base):
     color = Column(String)
     date = Column(DateTime)
     user_id = Column(Integer, ForeignKey("users.id"))
+    total = column_property(end_time - start_time)

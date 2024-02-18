@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, computed_field
 from typing import List
 from typing import Optional
-from datetime import date, time
+from datetime import date, time, timedelta
 
 
 class TimeEntryCreate(BaseModel):
@@ -18,6 +18,12 @@ class TimeEntryCreate(BaseModel):
 
 class TimeEntry(TimeEntryCreate):
     id: int
+    total: int = 0
+
+    @field_validator("total", mode="before")
+    @classmethod
+    def transform(cls, raw: timedelta) -> int:
+        return raw.seconds
 
 
 class DayCreate(BaseModel):
@@ -30,3 +36,8 @@ class Day(DayCreate):
     id: int
     date: date
     entries: List[TimeEntry]
+
+    @computed_field
+    @property
+    def total(self) -> int:
+        return sum(entry.total for entry in self.entries)
