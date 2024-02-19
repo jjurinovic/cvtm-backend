@@ -1,8 +1,8 @@
 from typing import Optional
 from datetime import timedelta, datetime
 from jose import jwt, JWTError
-from fastapi import HTTPException
-from .schemas.auth import TokenData
+from .schemas import TokenData
+from .exceptions import NoValidCredentials
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -24,14 +24,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-def verify(token: str, credentials_exception: HTTPException):
+def verify(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
 
         if email is None:
-            raise credentials_exception
+            raise NoValidCredentials()
         return TokenData(username=email)
 
     except JWTError:
-        raise credentials_exception
+        raise NoValidCredentials()

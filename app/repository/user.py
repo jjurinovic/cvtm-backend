@@ -1,12 +1,14 @@
 from sqlalchemy.orm import Session
-from .. import models, hashing, roles
+
+from ..auth import hashing
+from .. import models, roles
 from fastapi import HTTPException, status
 from ..schemas.users import User, UserCreate, PasswordChange, UserWithDeleted
 from typing import List
 from ..services.company import is_user_in_company
 from ..services import user as user_service
 from .address import create_address, update_address
-from ..hashing import Hash
+from ..auth.hashing import Hash
 from ..email.send_email import send_registration_email
 import secrets
 import string

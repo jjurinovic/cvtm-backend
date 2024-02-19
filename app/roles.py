@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from enum import Enum
 from .models import User
-from .auth import get_current_user
+from .auth.dependecies import get_current_user
 
 
 class Role(int, Enum):

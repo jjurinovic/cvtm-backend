@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from .. import database, auth, roles
+from .. import database, roles
 from sqlalchemy.orm import Session
 from ..repository import company
 from typing import List
@@ -8,6 +8,7 @@ from ..schemas.users import User
 from ..schemas.pagination import PagedResponse, PageParams
 from ..pagination import filter
 from ..models import Company as c
+from ..auth.dependecies import get_current_user
 
 router = APIRouter(
     tags=['Company'],
@@ -16,17 +17,17 @@ router = APIRouter(
 
 
 @router.post('/', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
-def create_company(req: CompanyCreate, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+def create_company(req: CompanyCreate, db: Session = Depends(database.get_db), current_user: User = Depends(get_current_user)):
     return company.create_company(req, db, current_user)
 
 
 @router.get('/{id}', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ADMIN))])
-def get_company(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+def get_company(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(get_current_user)):
     return company.get_company(id, db, current_user)
 
 
 @router.put('/', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ADMIN))])
-def update_company(req: Company, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+def update_company(req: Company, db: Session = Depends(database.get_db), current_user: User = Depends(get_current_user)):
     return company.update_company(req, db, current_user)
 
 
@@ -42,5 +43,5 @@ def delete_company(id: int, db: Session = Depends(database.get_db)):
 
 
 @router.put('/{id}/status-change', response_model=Company, dependencies=[Depends(roles.RoleChecker(roles.Role.ROOT))])
-def change_company_status(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(auth.get_current_user)):
+def change_company_status(id: int, db: Session = Depends(database.get_db), current_user: User = Depends(get_current_user)):
     return company.change_company_status(id, db, current_user)

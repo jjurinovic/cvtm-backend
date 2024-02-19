@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-from .routers import user, company, auth, time_entry
+
+from .auth.router import AuthRouter
+from .routers import user, company, time_entry
 from . import models
 from .database import engine
-from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -22,7 +23,7 @@ app.add_middleware(
 
 models.Base.metadata.create_all(engine)
 
-app.include_router(auth.router)
+app.include_router(AuthRouter)
 app.include_router(user.router)
 app.include_router(company.router)
-app.include_router(time_entry.router)
+app.include_router(time_entry.TimeEntryRouter)
