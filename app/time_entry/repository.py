@@ -1,6 +1,7 @@
 from fastapi import Depends
 from typing import Optional
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from .. import models, database
 from .schemas import TimeEntriesDay, TimeEntry, TimeEntryCreate
@@ -29,18 +30,13 @@ class TimeEntryRepository:
     ) -> TimeEntriesDay:
         # find by date
         entries = self.db.query(models.TimeEntry).filter(
+            models.TimeEntry.company_id == company_id).filter(
             models.TimeEntry.date == date)
 
         if user_id:
-            entries = entries.filter(models.TimeEntry.user_id == user_id).all()
+            entries = entries.filter(models.TimeEntry.user_id == user_id)
 
-        if company_id:
-            entries = entries.filter(
-                models.TimeEntry.company_id == company_id).all()
-
-        day = TimeEntriesDay(date=date, entries=entries)
-        if is_root(self.current_user.role):
-            return day
+        day = TimeEntriesDay(date=date, entries=entries.all())
 
         return day
 
@@ -74,6 +70,7 @@ class TimeEntryRepository:
         self.db.add(entry)
         self.db.commit()
         self.db.refresh(entry)
+
         return entry
 
     def get_by_id(self, id: int) -> TimeEntry:
@@ -82,4 +79,5 @@ class TimeEntryRepository:
     def delete(self, timeEntry: TimeEntry):
         self.db.delete(timeEntry)
         self.db.commit()
+
         return {"detail": "Successfully deleted Time entry"}

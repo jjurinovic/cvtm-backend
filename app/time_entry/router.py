@@ -18,7 +18,7 @@ def get_by_date(
     user_id: Optional[int] = None,
     timeEntryService: TimeEntryService = Depends()
 ):
-    return timeEntryService.list_by_date(date, user_id, company_id)
+    return timeEntryService.list_by_date(date, company_id, user_id)
 
 
 @TimeEntryRouter.post(
