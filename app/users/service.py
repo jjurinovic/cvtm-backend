@@ -1,7 +1,7 @@
 from fastapi import Depends
 
 from .repository import UsersRepository
-from .schemas import User, UserCreate, PasswordChange
+from .schemas import User, UserCreate, PasswordChange, UserWithDeleted
 from .utils import is_root, is_deleted_or_inactive, is_user, is_moderator
 from .exceptions import OnlyRootCanCreateRoot, EmailAlreadyTaken, UserNotFound, InvalidPassword, NotSameCompany, NotAllowedRoleChange
 
@@ -108,14 +108,14 @@ class UsersService:
         return self.usersRepository.restore(user)
 
     # Get all users by company id
-    def get_all(self, company_id: int, page_params: PageParams) -> PagedResponse[User]:
+    def get_all(self, company_id: int, page_params: PageParams) -> PagedResponse[UserWithDeleted]:
         # user have to be in same company or root
         if not is_user_in_company(company_id, self.current_user):
             raise NotSameCompany()
 
         query = self.usersRepository.get_all(company_id)
 
-        return filter(page_params, query, User, models.User, ['first_name', 'last_name'])
+        return filter(page_params, query, UserWithDeleted, models.User, ['first_name', 'last_name'])
 
     # Create root user
     async def create_root(self, req: UserCreate) -> User:

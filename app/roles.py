@@ -16,8 +16,6 @@ class RoleChecker:
         self.role_required = role_required
 
     def __call__(self, user: User = Depends(get_current_user)):
-        print(type(user.role))
-        print(type(self.role_required.value))
         if user.role > self.role_required.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

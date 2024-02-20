@@ -26,6 +26,7 @@ class UsersRepository:
         self.db = db
         self.addressRepository = addressRepository
 
+    # Create user
     async def create(self, user: UserCreate) -> User:
 
         address = None
@@ -63,18 +64,21 @@ class UsersRepository:
 
         return new_user
 
+    # Get user by email
     def get_by_email(self, email: str) -> User:
         user = self.db.query(models.User).filter(
             models.User.email == email).first()
 
         return user
 
+    # Get user by id
     def get_by_id(self, id: int) -> UserWithDeleted:
         user = self.db.query(models.User).filter(
             models.User.id == id).first()
 
         return user
 
+    # Update user
     def update(self, req: User, user: User) -> User:
         user_data = req.model_dump(exclude_unset=True)
 
@@ -94,11 +98,13 @@ class UsersRepository:
         self.db.refresh(user)
         return user
 
+    # Delete user
     def delete(self, user: User):
         self.db.delete(user)
         self.db.commit()
         return {'detail': 'Successfully deleted user'}
 
+    # Soft delete user
     def soft_delete(self, user: UserWithDeleted) -> UserWithDeleted:
         user.deleted = True
 
@@ -110,6 +116,7 @@ class UsersRepository:
         self.db.refresh(user)
         return user
 
+    # Change user status
     def change_status(self, user: User) -> User:
         user.inactive = not user.inactive
 
@@ -121,6 +128,7 @@ class UsersRepository:
         self.db.refresh(user)
         return user
 
+    # Restore deleted user
     def restore(self, user: UserWithDeleted) -> UserWithDeleted:
         user.deleted = False
 
@@ -132,10 +140,12 @@ class UsersRepository:
         self.db.refresh(user)
         return user
 
-    def get_all(self, company_id: int) -> List[User]:
+    # Get all users
+    def get_all(self, company_id: int) -> List[UserWithDeleted]:
         return self.db.query(models.User).filter(models.User.company_id ==
-                                                 company_id).order_by(desc(models.User.updated_date))
+                                                 company_id)
 
+    # Create root user
     async def create_root(self, req: UserCreate) -> User:
         # create random password
         password = create_random_password()
@@ -164,6 +174,7 @@ class UsersRepository:
         self.db.refresh(new_user)
         return new_user
 
+    # Password change
     def password_change(self, req: PasswordChange):
         self.current_user.password = Hash.bcrypt(req.new_password)
 

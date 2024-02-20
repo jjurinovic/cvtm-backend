@@ -9,19 +9,24 @@ from ..address.repository import AddressRepository
 from .schemas import Company, CompanyCreate
 from .. import models
 from .utils import set_updated
+from ..users.schemas import User
+from ..auth.dependecies import get_current_user
 
 
 class CompanyRepository:
     db: Session
     addressRepository: AddressRepository
+    current_user: User
 
     def __init__(
         self,
         db: Session = Depends(get_db),
-        addressRepository: AddressRepository = Depends()
+        addressRepository: AddressRepository = Depends(),
+        user: User = Depends(get_current_user)
     ) -> None:
         self.db = db
         self.addressRepository = addressRepository
+        self.current_user = user
 
     # Create Company
     def create(self, req: CompanyCreate) -> Company:
@@ -48,14 +53,16 @@ class CompanyRepository:
 
     # Get all companies
     def get_all(self) -> List[Company]:
-        return self.db.query(models.Company).order_by(desc(models.Company.updated_date))
+        return self.db.query(models.Company)
 
     # Update company
     def update(self, req: Company, company: Company) -> Company:
         company_data = req.model_dump(exclude_unset=True)
 
         if (company.address):
-            company.address = AddressRepository(req.address)
+            company.address = self.addressRepository.update(req.address)
+        else:
+            company.address = self.addressRepository.create(req.address)
 
         company = set_updated(company, self.current_user)
 
@@ -78,7 +85,7 @@ class CompanyRepository:
     def change_status(self, company: Company) -> Company:
         company.inactive = not company.inactive
 
-        company = set_updated(company)
+        company = set_updated(company, self.current_user)
 
         self.db.add(company)
         self.db.commit()

@@ -60,7 +60,7 @@ class CompanyService:
 
     # Change status
     def change_status(self, id: int) -> Company:
-        company = self.get(id)
+        company = self.companyRepository.get(id)
 
         if not company:
             raise CompanyNotFound()

@@ -8,7 +8,7 @@ from ..users.utils import is_root
 def set_updated(company: Company, user: User) -> Company:
     company.updated_date = datetime.now()
     company.updated_by = user.id
-    return user
+    return company
 
 
 def is_user_in_company(company_id: int, current_user: User) -> bool:

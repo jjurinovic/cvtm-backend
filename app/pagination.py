@@ -3,11 +3,11 @@ from pydantic import BaseModel
 from .address.schemas import Address
 from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm import Query
-from .database import Base
+from . import database
 from typing import List, Optional
 
 
-def filter(page_params: PageParams, query: Query, ResponseSchema: BaseModel, ResponseModel: Base, searchField: Optional[List[str]]) -> PagedResponse[T]:
+def filter(page_params: PageParams, query: Query, ResponseSchema: BaseModel, ResponseModel: database.Base, searchField: Optional[List[str]]) -> PagedResponse[T]:
     """Paginate and sort the query."""
 
     def sort(val: str, field: str):
@@ -23,6 +23,8 @@ def filter(page_params: PageParams, query: Query, ResponseSchema: BaseModel, Res
 
     if (page_params.sort):
         query = query.order_by(sort(page_params.sort, page_params.sort_field))
+    else:
+        query = query.order_by(desc(getattr(ResponseModel, 'updated_date')))
 
     paginated_query = query.offset(
         (page_params.page - 1) * page_params.size).limit(page_params.size)
