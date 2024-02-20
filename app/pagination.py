@@ -1,6 +1,6 @@
-from .schemas.pagination import PageParams, PagedResponse, T, PageFilter
+from .schemas import PageParams, PagedResponse, T, PageFilter
 from pydantic import BaseModel
-from .schemas.address import Address
+from .address.schemas import Address
 from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm import Query
 from .database import Base

@@ -1,11 +1,11 @@
+from fastapi import Depends
+from typing import Optional
 from sqlalchemy.orm import Session
+
 from .. import models, database
-from fastapi import HTTPException, status, Depends
 from .schemas import TimeEntriesDay, TimeEntry, TimeEntryCreate
 from ..users.schemas import User
-from ..services.company import is_user_in_company
-from ..services.user import is_root, is_id_same, is_user
-from typing import Optional
+from ..users.utils import is_root
 from ..auth.dependecies import get_current_user
 
 

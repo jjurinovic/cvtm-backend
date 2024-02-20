@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 from typing import Generic, TypeVar, List
-from enum import Enum
 from typing import Optional
 
 
