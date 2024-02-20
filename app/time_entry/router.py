@@ -3,7 +3,6 @@ from typing import Optional
 
 from .schemas import TimeEntriesDay, TimeEntry, TimeEntryCreate
 from .service import TimeEntryService
-from .dependencies import can_manipulate_self_entries
 
 TimeEntryRouter = APIRouter(
     tags=['Time Entry'],
@@ -24,7 +23,6 @@ def get_by_date(
 @TimeEntryRouter.post(
     '/entry',
     response_model=TimeEntry,
-    dependencies=[Depends(can_manipulate_self_entries)]
 )
 def create_time_entry(
     timeEntry: TimeEntryCreate,
@@ -36,7 +34,6 @@ def create_time_entry(
 @TimeEntryRouter.put(
     '/entry',
     response_model=TimeEntry,
-    dependencies=[Depends(can_manipulate_self_entries)]
 )
 def update_time_entry(
     timeEntry: TimeEntry,
