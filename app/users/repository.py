@@ -12,19 +12,23 @@ from .schemas import User, UserCreate, UserWithDeleted, PasswordChange
 from ..address.repository import AddressRepository
 from ..auth.hashing import Hash
 from ..roles import Role
+from ..auth.dependecies import get_current_user
 
 
 class UsersRepository:
     db: Session
     addressRepository: AddressRepository
+    current_user: User
 
     def __init__(
         self,
         db: Session = Depends(get_db),
-        addressRepository: AddressRepository = Depends()
+        addressRepository: AddressRepository = Depends(),
+        user: User = Depends(get_current_user)
     ) -> None:
         self.db = db
         self.addressRepository = addressRepository
+        self.current_user = user
 
     # Create user
     async def create(self, user: UserCreate) -> User:
@@ -83,9 +87,9 @@ class UsersRepository:
         user_data = req.model_dump(exclude_unset=True)
 
         if not user.address:
-            user.address = AddressRepository.create(req.address)
+            user.address = self.addressRepository.create(req.address)
         else:
-            user.address = AddressRepository.update(req.address)
+            user.address = self.addressRepository.update(req.address)
 
         for key, value in user_data.items():
             setattr(user, key, value) if key != 'address' else None

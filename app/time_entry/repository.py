@@ -39,7 +39,7 @@ class TimeEntryRepository:
                 models.TimeEntry.company_id == company_id).all()
 
         day = TimeEntriesDay(date=date, entries=entries)
-        if is_root(self.current_user):
+        if is_root(self.current_user.role):
             return day
 
         return day

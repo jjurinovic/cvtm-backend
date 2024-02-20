@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from typing import Union
 
 from .schemas import UserCreate, User, PasswordChange, UserWithCompany, UserWithDeleted
-from .dependecies import is_in_company
 from .service import UsersService
 
 from .. import roles
@@ -21,7 +20,7 @@ UsersRouter = APIRouter(
     response_model=User,
     dependencies=[
         Depends(roles.RoleChecker(
-            roles.Role.ADMIN)), Depends(is_in_company)
+            roles.Role.ADMIN))
     ]
 )
 async def create_user(req: UserCreate, usersService: UsersService = Depends()):
@@ -33,10 +32,11 @@ async def create_user(req: UserCreate, usersService: UsersService = Depends()):
     response_model=User,
     dependencies=[
         Depends(roles.RoleChecker(
-            roles.Role.ADMIN)), Depends(is_in_company)
+            roles.Role.ADMIN))
     ]
 )
 def update_user(req: User, usersService: UsersService = Depends()):
+    print(req)
     return usersService.update(req)
 
 

@@ -1,4 +1,5 @@
 from fastapi import Depends
+from typing import Union
 
 from .repository import UsersRepository
 from .schemas import User, UserCreate, PasswordChange, UserWithDeleted
@@ -25,6 +26,7 @@ class UsersService:
         self.usersRepository = usersRepository
         self.current_user = user
 
+    # Create user
     async def create(self, user: UserCreate) -> User:
         # only ROOT can create ROOT user
         if is_root(user.role) and is_root(self.current_user.role):
@@ -34,8 +36,12 @@ class UsersService:
         if self.get_by_email(user.email):
             raise EmailAlreadyTaken()
 
+        if not is_user_in_company(user.company_id, self.current_user):
+            raise NotSameCompany()
+
         return self.usersRepository.create(user)
 
+    # Get user by email
     def get_by_email(self, email: str) -> User:
         user = self.usersRepository.get_by_email(email)
 
@@ -44,36 +50,54 @@ class UsersService:
 
         return user
 
-    def get_by_id(self, id: int) -> User:
+    # Get user by id
+    def get_by_id(self, id: int) -> Union[User, UserWithDeleted]:
         user = self.usersRepository.get_by_id(id)
 
-        if not user or is_deleted_or_inactive(user):
+        if is_root(self.current_user.role):
+            return UserWithDeleted(
+                id=user.id,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                email=user.email,
+                password_changed=user.password_changed,
+                role=user.role,
+                company_id=user.company_id,
+                created_date=user.created_date,
+                updated_date=user.updated_date,
+                inactive=user.inactive,
+                deleted=user.deleted,
+                address=user.address
+            )
+
+        if not user or is_deleted_or_inactive(user) or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
 
         return user
 
+    # Update user
     def update(self, req: User) -> User:
-        user = self.get_by_id(req.id)
+        user = self.usersRepository.get_by_id(req.id)
 
         # only ROOT can update to ROOT user
         if is_root(user.role) and is_root(self.current_user.role):
             raise OnlyRootCanCreateRoot()
 
         # USER or ADMIN can't change their roles
-        if (is_user(self.current_user) or is_moderator(self.current_user)) and req.role != self.current_user.role:
+        if (is_user(self.current_user.role) or is_moderator(self.current_user.role)) and req.role != self.current_user.role:
             raise NotAllowedRoleChange()
 
-        user_mod_other_update = (is_user(self.current_user) or is_moderator(
-            self.current_user)) and req.id != self.current_user.id
+        user_mod_other_update = (is_user(self.current_user.role) or is_moderator(
+            self.current_user.role)) and req.id != self.current_user.id
 
-        if not user or is_deleted_or_inactive(user) or user_mod_other_update:
+        if not user or is_deleted_or_inactive(user) or user_mod_other_update or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
 
         return self.usersRepository.update(req, user)
 
     # Delete user
     def delete(self, id: int):
-        user = self.get_by_id(id)
+        user = self.usersRepository.get_by_id(id)
 
         if not user or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
@@ -82,7 +106,7 @@ class UsersService:
 
     # Soft delete
     def soft_delete(self, id: int):
-        user = self.get_by_id(id)
+        user = self.usersRepository.get_by_id(id)
 
         if not user or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
@@ -91,16 +115,16 @@ class UsersService:
 
     # Change status
     def change_status(self, id: int):
-        user = self.get_by_id(id)
+        user = self.usersRepository.get_by_id(id)
 
         if not user or user.deleted or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
 
-        return self.usersRepository.soft_delete(user)
+        return self.usersRepository.change_status(user)
 
     # Restore
-    def restore(self, id: int) -> User:
-        user = self.get_by_id(id)
+    def restore(self, id: int) -> UserWithDeleted:
+        user = self.usersRepository.get_by_id(id)
 
         if not user:
             raise UserNotFound()
