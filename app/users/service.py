@@ -36,7 +36,7 @@ class UsersService:
         if self.get_by_email(user.email):
             raise EmailAlreadyTaken()
 
-        if not is_user_in_company(user.company_id, self.current_user):
+        if not is_root(self.current_user) and not is_user_in_company(user.company_id, self.current_user):
             raise NotSameCompany()
 
         return self.usersRepository.create(user)
