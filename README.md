@@ -8,6 +8,8 @@ Welcome to the backend application for time management, built using FastAPI. Thi
 
 ##
 
+### Interactive API Documentation (Swagger UI): [https://cvtm-backend.onrender.com/docs](https://cvtm-backend.onrender.com/docs)
+
 ## Installation
 
 1.  Create virtual enviroment
