@@ -45,9 +45,6 @@ class UsersService:
     def get_by_email(self, email: str) -> User:
         user = self.usersRepository.get_by_email(email)
 
-        if not user:
-            raise UserNotFound()
-
         return user
 
     # Get user by id
