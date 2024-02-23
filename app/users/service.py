@@ -39,7 +39,7 @@ class UsersService:
         if not is_root(self.current_user) and not is_user_in_company(user.company_id, self.current_user):
             raise NotSameCompany()
 
-        return self.usersRepository.create(user)
+        return await self.usersRepository.create(user)
 
     # Get user by email
     def get_by_email(self, email: str) -> User:
