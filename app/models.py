@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, DateTime, Boolean
-from .database import Base
 from sqlalchemy.orm import relationship, column_property
+
+from .database import Base
 from datetime import datetime
 
 
@@ -34,6 +35,7 @@ class User(Base):
     deleted = Column(Boolean, default=False)
     inactive = Column(Boolean, default=False)
     updated_by = Column(Integer)
+    projects = relationship('Project', back_populates="users")
 
 
 class Company(Base):
@@ -56,6 +58,7 @@ class TimeEntry(Base):
     id = Column(Integer, primary_key=True, index=True)
     company_id = Column(Integer, ForeignKey("companies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
+    project_id = Column(Integer, ForeignKey("projects.id"))
     start_time = Column(Time)
     end_time = Column(Time)
     pause = Column(Integer)
