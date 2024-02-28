@@ -1,5 +1,5 @@
 from fastapi import Depends
-from typing import Union
+from typing import Union, Optional
 
 from .repository import UsersRepository
 from .schemas import User, UserCreate, PasswordChange, UserWithDeleted
@@ -48,27 +48,16 @@ class UsersService:
         return user
 
     # Get user by id
-    def get_by_id(self, id: int) -> Union[User, UserWithDeleted]:
+    def get_by_id(self, id: int, forceUser: Optional[bool] = False) -> Union[User, UserWithDeleted]:
         user = self.usersRepository.get_by_id(id)
 
-        if is_root(self.current_user.role):
-            return UserWithDeleted(
-                id=user.id,
-                first_name=user.first_name,
-                last_name=user.last_name,
-                email=user.email,
-                password_changed=user.password_changed,
-                role=user.role,
-                company_id=user.company_id,
-                created_date=user.created_date,
-                updated_date=user.updated_date,
-                inactive=user.inactive,
-                deleted=user.deleted,
-                address=user.address
-            )
-
+        print(user)
         if not user or is_deleted_or_inactive(user) or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
+
+        if is_root(self.current_user.role) and not forceUser:
+            usr = UserWithDeleted.model_validate(user)
+            return usr
 
         return user
 

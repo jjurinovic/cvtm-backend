@@ -6,6 +6,16 @@ from ..address.schemas import Address
 from ..company.schemas import Company
 
 
+class UserInfo(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    company_id: Optional[int] = None
+
+    class Config():
+        from_attributes = True
+
+
 class UserCreate(BaseModel):
     first_name: str
     last_name: str
