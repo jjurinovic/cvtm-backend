@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import date, datetime
 from typing import Optional, List
 
-from ..users.schemas import User
+from ..users.schemas import UserInfo
 
 
 class ProjectCreate(BaseModel):
@@ -16,7 +16,7 @@ class ProjectCreate(BaseModel):
 
 class Project(ProjectCreate):
     id: int
-    users: List[User] = []
+    users: List[UserInfo] = []
     active: bool
     created_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
@@ -24,3 +24,8 @@ class Project(ProjectCreate):
 
     class Config():
         from_attributes = True
+
+
+class ProjectUser(BaseModel):
+    project_id: int
+    user_id: int

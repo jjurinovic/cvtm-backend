@@ -1,8 +1,15 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, Boolean, Table
 from sqlalchemy.orm import relationship
 
 from ..database import Base
 from datetime import datetime
+
+project_users = Table('project_users', Base.metadata,
+                      Column('project_id', ForeignKey(
+                          'projects.id'), primary_key=True),
+                      Column('user_id', ForeignKey(
+                          'users.id'), primary_key=True)
+                      )
 
 
 class Project(Base):
@@ -12,7 +19,8 @@ class Project(Base):
     description = Column(type_=String, nullable=True)
     company_id = Column(Integer, ForeignKey(
         "companies.id"), nullable=True)
-    users = relationship("User", back_populates="company")
+    users = relationship("User", secondary="project_users",
+                         back_populates="projects")
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     estimated_date = Column(DateTime)

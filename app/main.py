@@ -7,7 +7,10 @@ from .auth.router import AuthRouter
 from .users.router import UsersRouter
 from .company.router import CompanyRouter
 from .time_entry.router import TimeEntryRouter
+from .projects.router import ProjectsRouter
+
 from . import models
+from .projects import models as ProjectModels
 from .database import engine
 
 app = FastAPI()
@@ -27,11 +30,14 @@ app.add_middleware(
 )
 
 models.Base.metadata.create_all(engine)
+ProjectModels.Base.metadata.create_all(engine)
+
 
 app.include_router(AuthRouter)
 app.include_router(UsersRouter)
 app.include_router(CompanyRouter)
 app.include_router(TimeEntryRouter)
+app.include_router(ProjectsRouter)
 
 
 if __name__ == "__main__":

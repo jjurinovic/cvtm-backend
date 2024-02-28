@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, DateTime, Boolean
 from sqlalchemy.orm import relationship, column_property
+from datetime import datetime
 
 from .database import Base
-from datetime import datetime
 
 
 class Address(Base):
@@ -35,7 +35,8 @@ class User(Base):
     deleted = Column(Boolean, default=False)
     inactive = Column(Boolean, default=False)
     updated_by = Column(Integer)
-    projects = relationship('Project', back_populates="users")
+    projects = relationship(
+        'Project', secondary="project_users", back_populates="users")
 
 
 class Company(Base):
