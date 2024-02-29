@@ -28,8 +28,8 @@ def is_user(role: Role):
     return role == Role.USER
 
 
-def is_deleted_or_inactive(user: UserWithDeleted):
-    return user.inactive or user.deleted
+def is_deleted(user: UserWithDeleted):
+    return user.deleted
 
 
 def set_updated(user: User, current_user: User):

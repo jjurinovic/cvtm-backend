@@ -3,7 +3,7 @@ from typing import Union, Optional
 
 from .repository import UsersRepository
 from .schemas import User, UserCreate, PasswordChange, UserWithDeleted
-from .utils import is_root, is_deleted_or_inactive, is_user, is_moderator
+from .utils import is_root, is_deleted, is_user, is_moderator
 from .exceptions import OnlyRootCanCreateRoot, EmailAlreadyTaken, UserNotFound, InvalidPassword, NotSameCompany, NotAllowedRoleChange
 
 from ..auth.dependecies import get_current_user
@@ -51,8 +51,7 @@ class UsersService:
     def get_by_id(self, id: int, forceUser: Optional[bool] = False) -> Union[User, UserWithDeleted]:
         user = self.usersRepository.get_by_id(id)
 
-        print(user)
-        if not user or is_deleted_or_inactive(user) or not is_user_in_company(user.company_id, self.current_user):
+        if not user or is_deleted(user) or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
 
         if is_root(self.current_user.role) and not forceUser:
@@ -76,7 +75,7 @@ class UsersService:
         user_mod_other_update = (is_user(self.current_user.role) or is_moderator(
             self.current_user.role)) and req.id != self.current_user.id
 
-        if not user or is_deleted_or_inactive(user) or user_mod_other_update or not is_user_in_company(user.company_id, self.current_user):
+        if not user or is_deleted(user) or user_mod_other_update or not is_user_in_company(user.company_id, self.current_user):
             raise UserNotFound()
 
         return self.usersRepository.update(req, user)
@@ -118,7 +117,10 @@ class UsersService:
         return self.usersRepository.restore(user)
 
     # Get all users by company id
-    def get_all(self, company_id: int, page_params: PageParams) -> PagedResponse[UserWithDeleted]:
+    def get_all(self, company_id: Optional[int], page_params: PageParams) -> PagedResponse[UserWithDeleted]:
+        if not company_id:
+            company_id = self.current_user.company_id
+
         # user have to be in same company or root
         if not is_user_in_company(company_id, self.current_user):
             raise NotSameCompany()

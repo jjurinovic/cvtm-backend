@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from typing import Union
+from typing import Union, Optional
 
 from .schemas import UserCreate, User, PasswordChange, UserWithCompany, UserWithDeleted
 from .service import UsersService
@@ -84,22 +83,22 @@ def get_current_user(current_user: UserWithCompany = Depends(get_current_user)):
     return current_user
 
 
-@UsersRouter.get('/{id}', response_model=Union[User, UserWithDeleted])
-def get_user(id: int, usersService: UsersService = Depends()):
-    return usersService.get_by_id(id)
-
-
 @UsersRouter.get(
-    '/',
+    '/list',
     response_model=PagedResponse[UserWithDeleted],
     dependencies=[Depends(roles.RoleChecker(roles.Role.MODERATOR))]
 )
 def get_all_users(
-    company_id: int,
+    company_id: Optional[int] = None,
     page_params: PageParams = Depends(PageParams),
     usersService: UsersService = Depends()
 ):
     return usersService.get_all(company_id, page_params)
+
+
+@UsersRouter.get('/{id}', response_model=Union[User, UserWithDeleted])
+def get_user(id: int, usersService: UsersService = Depends()):
+    return usersService.get_by_id(id)
 
 
 @UsersRouter.put('/change-password')
