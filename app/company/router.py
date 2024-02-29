@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
+from typing import Optional
 
 from .service import CompanyService
 from .schemas import Company, CompanyCreate
@@ -27,11 +27,30 @@ def create_company(
 
 
 @CompanyRouter.get(
+    '/',
+    response_model=Company,
+)
+def get_my_company(companyService: CompanyService = Depends()):
+    return companyService.get(None)
+
+
+@CompanyRouter.get(
+    '/list',
+    response_model=PagedResponse[Company],
+    dependencies=[Depends(RoleChecker(Role.ROOT))]
+)
+def get_all_companies(
+    page_params: PageParams = Depends(PageParams),
+    companyService: CompanyService = Depends()
+):
+    return companyService.get_all(page_params)
+
+
+@CompanyRouter.get(
     '/{id}',
     response_model=Company,
-    dependencies=[Depends(RoleChecker(Role.ADMIN))]
 )
-def get_company(id: int, companyService: CompanyService = Depends()):
+def get_company(id: Optional[int], companyService: CompanyService = Depends()):
     return companyService.get(id)
 
 
@@ -42,18 +61,6 @@ def get_company(id: int, companyService: CompanyService = Depends()):
 )
 def update_company(req: Company, companyService: CompanyService = Depends()):
     return companyService.update(req)
-
-
-@CompanyRouter.get(
-    '/',
-    response_model=PagedResponse[Company],
-    dependencies=[Depends(RoleChecker(Role.ROOT))]
-)
-def get_all_companies(
-    page_params: PageParams = Depends(PageParams),
-    companyService: CompanyService = Depends()
-):
-    return companyService.get_all(page_params)
 
 
 @CompanyRouter.delete(

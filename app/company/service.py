@@ -1,4 +1,5 @@
 from fastapi import Depends
+from typing import Optional
 
 from .repository import CompanyRepository
 from .schemas import Company, CompanyCreate
@@ -30,7 +31,10 @@ class CompanyService:
         return self.companyRepository.create(req)
 
     # Get company by id
-    def get(self, id: int) -> Company:
+    def get(self, id: Optional[int]) -> Company:
+        if not id:
+            id = self.current_user.company_id
+
         if not is_user_in_company(id, self.current_user):
             raise CompanyNotFound()
         return self.companyRepository.get(id)
