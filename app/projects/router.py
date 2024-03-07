@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
+from typing import Optional
 
-from .schemas import Project, ProjectCreate, ProjectUser
+from .schemas import Project, ProjectCreate, ProjectUsers
 from .service import ProjectsService
 from ..roles import RoleChecker, Role
+from ..pagination import PagedResponse, PageParams, PageFilter
 
 ProjectsRouter = APIRouter(
     tags=['Projects'],
@@ -19,6 +21,19 @@ ProjectsRouter = APIRouter(
 )
 def create_project(req: ProjectCreate, projectsService: ProjectsService = Depends()):
     return projectsService.create(req)
+
+
+@ProjectsRouter.get(
+    '/list',
+    response_model=PagedResponse[Project],
+    dependencies=[Depends(RoleChecker(Role.MODERATOR))]
+)
+def get_all_users(
+    company_id: Optional[int] = None,
+    page_params: PageParams = Depends(PageParams),
+    projectsService: ProjectsService = Depends()
+):
+    return projectsService.get_all(company_id, page_params)
 
 
 @ProjectsRouter.get(
@@ -44,14 +59,25 @@ def update_project(project: Project, projectsService: ProjectsService = Depends(
 
 
 @ProjectsRouter.post(
-    '/assign-user',
+    '/assign-users',
     response_model=Project,
     dependencies=[
         Depends(RoleChecker(Role.ADMIN))
     ]
 )
-def assign_user(req: ProjectUser, projectsService: ProjectsService = Depends()):
-    return projectsService.assign_user(req.user_id, req.project_id)
+def assign_users(req: ProjectUsers, projectsService: ProjectsService = Depends()):
+    return projectsService.assign_users(req)
+
+
+@ProjectsRouter.post(
+    '/remove-users',
+    response_model=Project,
+    dependencies=[
+        Depends(RoleChecker(Role.ADMIN))
+    ]
+)
+def remove_users(req: ProjectUsers, projectsService: ProjectsService = Depends()):
+    return projectsService.remove_users(req)
 
 
 @ProjectsRouter.get(

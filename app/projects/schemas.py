@@ -26,6 +26,6 @@ class Project(ProjectCreate):
         from_attributes = True
 
 
-class ProjectUser(BaseModel):
+class ProjectUsers(BaseModel):
     project_id: int
-    user_id: int
+    users: List[int] = []

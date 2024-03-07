@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from .schemas import Project, ProjectCreate
 from .models import Project as ProjectModel, project_users
@@ -65,10 +65,21 @@ class ProjectsRepository:
         self.db.refresh(project)
         return project
 
-    # Assign user to project
+    # Assign users to project
+    def assign_users(self, users: List[User], project: Project) -> Project:
+        for user in users:
+            project.users.append(user)
 
-    def assign_user(self, user: User, project: Project) -> Project:
-        project.users.append(user)
+        self.db.add(project)
+        self.db.commit()
+        self.db.refresh(project)
+
+        return project
+
+    # Remove users from project
+    def remove_users(self, users: List[User], project: Project) -> Project:
+        for user in users:
+            project.users.remove(user)
 
         self.db.add(project)
         self.db.commit()
@@ -77,5 +88,11 @@ class ProjectsRepository:
         return project
 
     # Get all projects by user or company
-    def get_all(user_id: Optional[int] = None, company_id: Optional[int] = None):
+    def get_all(self, company_id: int) -> List[Project]:
+        projects = self.db.query(ProjectModel).filter(
+            ProjectModel.company_id == company_id)
+        return projects
+
+    # Get all project from user
+    def get_by_user(self, user: User) -> List[Project]:
         pass
