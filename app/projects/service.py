@@ -103,7 +103,7 @@ class ProjectsService:
         # call get user to check if user exits
         user = self.usersService.get_by_id(user_id)
 
-        return self.projectsRepository.get_all(user_id)
+        return self.projectsRepository.get_by_user(user)
 
     # Get all projects by company id
     def get_all(self, company_id: Optional[int], page_params: PageParams) -> PagedResponse[Project]:

@@ -14,10 +14,13 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = None
 
 
-class Project(ProjectCreate):
+class ProjectInfo(ProjectCreate):
     id: int
-    users: List[UserInfo] = []
     active: bool
+
+
+class Project(ProjectInfo):
+    users: List[UserInfo] = []
     created_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
     updated_by: Optional[int] = None

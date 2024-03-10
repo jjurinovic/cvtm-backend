@@ -4,10 +4,11 @@ from datetime import datetime
 from typing import Optional, List
 
 from .schemas import Project, ProjectCreate
-from .models import Project as ProjectModel, project_users
+from .models import Project as ProjectModel
 from .utils import set_updated
 
 from ..users.schemas import User, UserInfo
+from ..models import User as UserModel
 from ..auth.dependecies import get_current_user
 from ..database import get_db
 
@@ -95,4 +96,9 @@ class ProjectsRepository:
 
     # Get all project from user
     def get_by_user(self, user: User) -> List[Project]:
-        pass
+        projects = self.db.query(ProjectModel).filter(
+            ProjectModel.users.any(UserModel.id == user.id)).all()
+
+        print('projects', projects)
+
+        return projects

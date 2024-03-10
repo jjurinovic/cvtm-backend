@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
-from typing import Optional
+from typing import Optional, List
 
-from .schemas import Project, ProjectCreate, ProjectUsers
+from .schemas import Project, ProjectCreate, ProjectUsers, ProjectInfo
 from .service import ProjectsService
 from ..roles import RoleChecker, Role
 from ..pagination import PagedResponse, PageParams, PageFilter
@@ -82,7 +82,7 @@ def remove_users(req: ProjectUsers, projectsService: ProjectsService = Depends()
 
 @ProjectsRouter.get(
     '/user/{user_id}',
-    response_model=Project,
+    response_model=List[ProjectInfo],
     dependencies=[
         Depends(RoleChecker(Role.USER))
     ]
