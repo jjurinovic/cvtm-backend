@@ -3,7 +3,7 @@ from fastapi import Depends
 from datetime import datetime
 from typing import Optional, List
 
-from .schemas import Project, ProjectCreate
+from .schemas import Project, ProjectCreate, ProjectInfo
 from .models import Project as ProjectModel
 from .utils import set_updated
 
@@ -95,10 +95,8 @@ class ProjectsRepository:
         return projects
 
     # Get all project from user
-    def get_by_user(self, user: User) -> List[Project]:
+    def get_by_user(self, user: User) -> List[ProjectInfo]:
         projects = self.db.query(ProjectModel).filter(
             ProjectModel.users.any(UserModel.id == user.id)).all()
-
-        print('projects', projects)
 
         return projects

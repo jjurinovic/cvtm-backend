@@ -3,6 +3,8 @@ from typing import List
 from typing import Optional
 from datetime import date, time, timedelta
 
+from ..projects.schemas import ProjectInfo, Project
+
 
 class TimeEntryCreate(BaseModel):
     company_id: int
@@ -14,19 +16,21 @@ class TimeEntryCreate(BaseModel):
     date: date
     title: str
     color: Optional[str] = None
+    project_id: int
 
 
 class TimeEntry(TimeEntryCreate):
     id: int
+    project: ProjectInfo
     total: int = 0
+
+    class Config():
+        from_attributes = True
 
     @field_validator("total", mode="before")
     @classmethod
     def transform(cls, raw: timedelta) -> int:
         return raw.seconds / 60
-
-    class Config():
-        from_attributes = True
 
 
 class TimeEntriesDay(BaseModel):

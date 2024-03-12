@@ -60,6 +60,7 @@ class TimeEntry(Base):
     company_id = Column(Integer, ForeignKey("companies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     project_id = Column(Integer, ForeignKey("projects.id"))
+    project = relationship("Project")
     start_time = Column(Time)
     end_time = Column(Time)
     pause = Column(Integer)

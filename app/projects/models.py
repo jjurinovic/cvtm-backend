@@ -29,3 +29,6 @@ class Project(Base):
     updated_by = Column(Integer)
     password_changed = Column(Boolean)
     active = Column(Boolean, default=True)
+
+    class Config():
+        from_attributes = True

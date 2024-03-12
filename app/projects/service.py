@@ -2,7 +2,7 @@ from fastapi import Depends
 from typing import List, Optional
 
 from .repository import ProjectsRepository
-from .schemas import ProjectCreate, Project, ProjectUsers
+from .schemas import ProjectCreate, Project, ProjectUsers, ProjectInfo
 from .exceptions import ProjectNotFound, UserAlreadyAssigned
 from .models import Project as ProjectModel
 
@@ -99,7 +99,7 @@ class ProjectsService:
         return self.get(project.id)
 
     # Get user by id
-    def getByUserId(self, user_id: int) -> List[Project]:
+    def getByUserId(self, user_id: int) -> List[ProjectInfo]:
         # call get user to check if user exits
         user = self.usersService.get_by_id(user_id)
 

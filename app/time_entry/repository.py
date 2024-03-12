@@ -1,12 +1,10 @@
 from fastapi import Depends
 from typing import Optional
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from .. import models, database
 from .schemas import TimeEntriesDay, TimeEntry, TimeEntryCreate
 from ..users.schemas import User
-from ..users.utils import is_root
 from ..auth.dependecies import get_current_user
 
 
@@ -53,7 +51,8 @@ class TimeEntryRepository:
             notes=time_entry.notes,
             company_id=time_entry.company_id,
             user_id=time_entry.user_id,
-            color=time_entry.color
+            color=time_entry.color,
+            project_id=time_entry.project_id
         )
         self.db.add(new_entry)
         self.db.commit()

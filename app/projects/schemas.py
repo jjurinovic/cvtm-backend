@@ -18,6 +18,9 @@ class ProjectInfo(ProjectCreate):
     id: int
     active: bool
 
+    class Config():
+        from_attributes = True
+
 
 class Project(ProjectInfo):
     users: List[UserInfo] = []
