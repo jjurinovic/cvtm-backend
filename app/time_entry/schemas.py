@@ -3,7 +3,7 @@ from typing import List
 from typing import Optional
 from datetime import date, time, timedelta
 
-from ..projects.schemas import ProjectInfo, Project
+from ..projects.schemas import ProjectInfo
 
 
 class TimeEntryCreate(BaseModel):
@@ -21,7 +21,7 @@ class TimeEntryCreate(BaseModel):
 
 class TimeEntry(TimeEntryCreate):
     id: int
-    project: ProjectInfo
+    project: Optional[ProjectInfo] = None
     total: int = 0
 
     class Config():
