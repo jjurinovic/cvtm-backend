@@ -65,7 +65,7 @@ class UsersService:
         user = self.usersRepository.get_by_id(req.id)
 
         # only ROOT can update to ROOT user
-        if is_root(user.role) and is_root(self.current_user.role):
+        if is_root(user.role) and not is_root(self.current_user.role):
             raise OnlyRootCanCreateRoot()
 
         # USER or ADMIN can't change their roles
